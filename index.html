@@ -1,11 +1,252 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Test Page</title>
+  <meta charset="UTF-8">
+  <title>jslav.games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat+Alternates|PT+Sans|Open+Sans">
+  <style>
+    body {
+      font-family: 'Open Sans', Arial, sans-serif;
+      background: #1B1B1B;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header, nav, section, footer {
+      width: 100%;
+      margin: 0 auto;
+      max-width: 1200px;
+      box-sizing: border-box;
+      padding: 10px 20px;
+    }
+    header {
+      background: #282828;
+      text-align: center;
+      padding: 40px 20px 20px 20px;
+    }
+    header h1 {
+      font-family: 'Montserrat Alternates', cursive;
+      font-size: 60px;
+      margin: 0 0 10px 0;
+      color: #FFC95C;
+    }
+    nav {
+      background: #222;
+      margin-top: 0;
+      padding: 0;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    nav li {
+      margin: 0 15px;
+    }
+    nav a {
+      color: #FFC95C;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 15px 10px;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+    nav a:hover, nav .active_link a {
+      color: #fff;
+    }
+    .main-content {
+      max-width: 1000px;
+      margin: 30px auto;
+      background: #232323;
+      border-radius: 10px;
+      padding: 30px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #FFC95C;
+    }
+    .download-btn {
+      background: #FFC95C;
+      color: #232323;
+      border: none;
+      border-radius: 6px;
+      padding: 14px 28px;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 12px 0;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+      max-width: 400px;
+      display: block;
+    }
+    .download-btn:hover {
+      background: #FFD97E;
+    }
+    .news, .footer-section {
+      margin-top: 40px;
+      background: #181818;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .news h2 {
+      color: #FFC95C;
+    }
+    .img-section {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 24px 0;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .img-section img {
+      max-width: 340px;
+      border-radius: 6px;
+      border: 2px solid #444;
+      margin-bottom: 10px;
+    }
+    .img-section .img-desc {
+      max-width: 340px;
+      margin-left: 0;
+      color: #ccc;
+    }
+    .footer-section {
+      font-size: 1.1em;
+      margin-bottom: 10px;
+    }
+    .copyright {
+      text-align: center;
+      color: #888;
+      font-size: 1em;
+      margin: 20px 0 0 0;
+    }
+    @media (max-width: 700px) {
+      header h1 { font-size: 36px; }
+      .main-content, header, nav, section, footer { padding: 10px; }
+      .img-section { flex-direction: column; align-items: center; }
+    }
+  </style>
 </head>
 <body>
-  <h1 style="color: white; background: red;">Hello, GitHub Pages!</h1>
-  <p>If you see this, your site works!</p>
+
+<header>
+  <h1>JSLAV.GAMES</h1>
+  <div>
+    <img src="https://kotisivukone.fi/files/jslav.games.ota.fi/Screenshot_from_2025-05-20_17-45-16.png" alt="JSLAV Logo" style="max-width:170px; border-radius:10px;">
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li class="active_link"><a href="/">Front page</a></li>
+    <li><a href="/uutiset.html">News</a></li>
+    <li><a href="/albumi.html">Images</a></li>
+    <li><a href="/jslav-games">JSLAV-Games</a></li>
+    <li><a href="/games-we-not-made-them">Games (we not made them)</a></li>
+    <li><a href="/chat">Chat</a></li>
+    <li><a href="/jslav.videos.fi">JSLAV.Videos.fi</a></li>
+  </ul>
+</nav>
+
+<section class="main-content">
+  <h2>Welcome to JSLAV.Games</h2>
+  <hr>
+  <h3>Download our games</h3>
+  <button class="download-btn" onclick="window.open('https://drive.google.com/file/d/1qlOtYkFeiS-CvrGI8UdDr7i2DNB05-zA/view?usp=drive_link')">Download JSLAV.zip</button>
+  <div class="img-section">
+    <img src="/api/thumbnail?img=/files/jslav.games.ota.fi/Desert_Background.png&width=421" alt="Desert Background">
+    <div class="img-desc">
+      <strong>This Game is KumanchuRoyale Remake</strong><br>
+      we are coding it but its so hard, so it will take some time.<br>
+      i mean its not so active i am the only one who try to make it but i hope this will become popular and i hope that my friends would help me.<br>
+      i mean i still believe that my friends would want to make this website too but yeah i mean .its not that easy.... right?<br>
+      i could some cool intro in kumanchu royale? maybe? or not..? that was it
+    </div>
+  </div>
+  <button class="download-btn" onclick="window.open('/files/jslav.games.ota.fi/KumanchuRoyale.zip')">Download KumanchuRoyale.zip</button>
+
+  <div class="img-section">
+    <img src="/api/thumbnail?img=/files/jslav.games.ota.fi/Screenshot_from_2025-05-20_18-56-58.png&width=340" alt="MatoKarhu Screenshot">
+    <div class="img-desc">
+      <strong>MatoKarhu.jar</strong><br>
+      it is snakGame but KumanchuRoyale edition.<br>
+      works in java 24.<br>
+      KumanchuRoyale is made by Ponos.
+    </div>
+  </div>
+  <button class="download-btn" onclick="window.open('/files/jslav.games.ota.fi/MatoKarhu_1.0.jar')">Download MatoKarhu.jar</button>
+
+  <div class="img-section">
+    <img src="/api/thumbnail?img=/files/jslav.games.ota.fi/Screenshot_from_2025-05-20_18-55-572.png&width=340" alt="Snake Screenshot">
+    <div class="img-desc">
+      <strong>Snake.jar</strong><br>
+      made in IntelliJ IDEA Community Edition.<br>
+      works only in java 24.<br>
+      this game lags if you not move.<br>
+      use arrow keys to move.
+    </div>
+  </div>
+  <button class="download-btn" onclick="window.open('/files/jslav.games.ota.fi/Snake.jar')">Download Snake.jar</button>
+
+  <div class="img-section">
+    <img src="/api/thumbnail?img=/files/jslav.games.ota.fi/Screenshot_from_2025-05-20_17-45-16.png&width=340" alt="JSLAV.zip Screenshot">
+    <div class="img-desc">
+      <strong>is it hard to just install all our games one by one?</strong><br>
+      then i have answer for your problem! its JSLAV.zip!<br>
+      all the cool Games are There :D
+    </div>
+  </div>
+  <button class="download-btn" onclick="window.open('https://drive.google.com/file/d/1qlOtYkFeiS-CvrGI8UdDr7i2DNB05-zA/view?usp=drive_link')">Download JSLAV.zip</button>
+
+  <div class="img-section">
+    <img src="/api/thumbnail?img=/files/jslav.games.ota.fi/Screenshot_from_2025-05-21_20-55-56.png&width=340" alt="J-GAMES Screenshot">
+    <div class="img-desc">
+      <strong>J-GAMES</strong><br>
+      are you tired of bad low quality mobile games that only shows ads every 10 seconds?!<br>
+      mobile games that dont care about Players but care more about money?<br>
+      then we have answer for your problem: its J-GAMES.zip!<br>
+      there are so much cool games like cubic adventures and FoodEater and more!!!<br>
+      what are you waiting just download it and enjoy the quality!!!! :D no ads and the best thing its free!!!
+    </div>
+  </div>
+  <button class="download-btn" onclick="window.open('https://drive.google.com/file/d/14gNwOwxa2uCrRTmpgSTqyHnmndbFmKza/view?usp=drive_link')">Download J-GAMES.zip</button>
+
+  <div class="img-section">
+    <img src="/api/thumbnail?img=/files/jslav.games.ota.fi/TheBattleCats.jpg&width=340" alt="Battle Cats">
+    <div class="img-desc">
+      <strong>Battle cats music and battle cats music MIDI</strong><br>
+      <a href="https://drive.google.com/drive/my-drive?hl=fi" target="_blank">Google Drive</a><br>
+      Use <a href="https://onlinesequencer.net/" target="_blank">Online Sequencer</a> to play MIDI version of the battle cats musics.
+    </div>
+  </div>
+  <button class="download-btn" onclick="window.open('https://drive.google.com/file/d/1jQLAkmRTNSIDk9u63dPOEZW6q2b_HQ-t/view?usp=sharing')">Download</button>
+
+  <div class="news">
+    <h2>News</h2>
+    <div>
+      <b><a href="/uutiset.html?245820">INFO</a></b>
+      <span class="small">(20.05.2025 10.42) </span><br>
+      <img src="/api/thumbnail?img=/files/jslav.games.ota.fi/Screenshot_from_2025-05-20_17-45-16.png&width=100" alt="" style="vertical-align:middle;">
+      <span>
+        What is JSLAV.GAMES.FI<br>
+        Welcome to JSLAV.GAMES.FI!<br>
+        You might be wondering, What is JSLAV.GAMES.FI? Well, let me answer that for you!
+        JSLAV was created by five..
+      </span>
+    </div>
+  </div>
+</section>
+
+<footer class="footer-section">
+  <div class="copyright">
+    Copyright © 2025 JSLAV.GAMES.FI
+  </div>
+</footer>
+
 </body>
 </html>
-
