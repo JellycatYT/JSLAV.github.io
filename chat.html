@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat | jslav.games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat+Alternates|PT+Sans|Open+Sans">
+  <style>
+    body {
+      font-family: 'Open Sans', Arial, sans-serif;
+      background: #1B1B1B;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header, nav, section, footer {
+      width: 100%;
+      margin: 0 auto;
+      max-width: 1200px;
+      box-sizing: border-box;
+      padding: 10px 20px;
+    }
+    header {
+      background: #282828;
+      text-align: center;
+      padding: 40px 20px 20px 20px;
+    }
+    header h1 {
+      font-family: 'Montserrat Alternates', cursive;
+      font-size: 60px;
+      margin: 0 0 10px 0;
+      color: #FFC95C;
+    }
+    nav {
+      background: #222;
+      margin-top: 0;
+      padding: 0;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    nav li {
+      margin: 0 15px;
+    }
+    nav a {
+      color: #FFC95C;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 15px 10px;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+    nav a:hover, nav .active_link a {
+      color: #fff;
+    }
+    .main-content {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #232323;
+      border-radius: 10px;
+      padding: 30px;
+      min-height: 480px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #FFC95C;
+    }
+    .chat-container {
+      background: #181818;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 30px;
+      min-height: 320px;
+    }
+    #disqus_thread {
+      background: #232323;
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .copyright {
+      text-align: center;
+      color: #888;
+      font-size: 1em;
+      margin: 20px 0 0 0;
+    }
+    @media (max-width: 700px) {
+      header h1 { font-size: 36px; }
+      .main-content, header, nav, section, footer { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>JSLAV.GAMES</h1>
+  <div>
+    <img src="Screenshot_from_2025-05-20_17-45-16_490x.png" alt="JSLAV Logo" style="max-width:170px; border-radius:10px;">
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="index.html">Front page</a></li>
+    <li><a href="uutiset.html">News</a></li>
+    <li><a href="albumi.html">Images</a></li>
+    <li><a href="jslav-games.html">JSLAV-Games</a></li>
+    <li><a href="games-we-not-made-them.html">Games (we not made them)</a></li>
+    <li class="active_link"><a href="chat.html">Chat</a></li>
+    <li><a href="jslav.videos.fi.html">JSLAV.Videos.fi</a></li>
+  </ul>
+</nav>
+
+<section class="main-content">
+  <h2>Chat / Comments</h2>
+  <div class="chat-container">
+    <!-- Disqus embed code -->
+    <div id="disqus_thread"></div>
+    <script>
+      /**
+      *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+      *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables    */
+      /*
+      var disqus_config = function () {
+      this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+      this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+      };
+      */
+      (function() {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://jslav-games-ota-fi.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+      })();
+    </script>
+    <noscript>
+      Please enable JavaScript to view the
+      <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+    </noscript>
+    <!-- End Disqus embed code -->
+  </div>
+</section>
+
+<footer>
+  <div class="copyright">
+    Copyright © 2025 JSLAV.GAMES.FI
+  </div>
+</footer>
+
+</body>
+</html>
