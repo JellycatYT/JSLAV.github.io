@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,11 +28,11 @@
       body .ksk_middle_area_container_users_should_not_change { width: calc(100% - 1px);}
       body.twocol #right-bar { width: calc(100% - 1px); margin-left: 0;}
     }
-    /* Optional: fix for hidden logo/text if you want it visible */
+    /* Show logo and text if hidden by builder */
     #logo_and_text_div, #mainimage_logo_and_text_div { visibility: visible !important; }
   </style>
 </head>
-<body class="singlepage ksk_responsive_page normal madpages nocol url_jslav.videos.fi using_kskpages">
+<body class="singlepage ksk_responsive_page normal madpages nocol url_jslav_videos_fi using_kskpages">
   <div id="ksk_page_wrapper" class="ksk_page_movement ksk_page_main_container">
     <div class="kskpages-backdrop" style="display: none;"></div>
     <!-- Navigation -->
@@ -49,17 +50,17 @@
                 </div>
               </li>
               <li class="mli first_link ksk_has_sublink">
-                <a class="ksk_main_menu" href="/"><span>Front page</span></a>
+                <a class="ksk_main_menu" href="index.html"><span>Front page</span></a>
                 <ul class="ksk_sub_menu_item">
-                  <li class="mli first_link"><a class="ksk_sub_menu" href="/jslav-games"><span>JSLAV-GAMES</span></a></li>
+                  <li class="mli first_link"><a class="ksk_sub_menu" href="jslav-games.html"><span>JSLAV-GAMES</span></a></li>
                 </ul>
               </li>
-              <li class="mli"><a class="ksk_main_menu" href="/uutiset.html"><span>News</span></a></li>
-              <li class="mli"><a class="ksk_main_menu" href="/albumi.html"><span>Images</span></a></li>
-              <li class="mli"><a class="ksk_main_menu" href="/jslav-games"><span>JSLAV-Games</span></a></li>
-              <li class="mli"><a class="ksk_main_menu" href="/games-we-not-made-them"><span>Games (we not made them)</span></a></li>
-              <li class="mli"><a class="ksk_main_menu" href="/chat"><span>Chat</span></a></li>
-              <li class="active_link"><a class="ksk_main_menu" href="/jslav.videos.fi"><span>JSLAV.Videos.fi</span></a></li>
+              <li class="mli"><a class="ksk_main_menu" href="uutiset.html"><span>News</span></a></li>
+              <li class="mli"><a class="ksk_main_menu" href="albumi.html"><span>Images</span></a></li>
+              <li class="mli"><a class="ksk_main_menu" href="jslav-games.html"><span>JSLAV-Games</span></a></li>
+              <li class="mli"><a class="ksk_main_menu" href="games-we-not-made-them.html"><span>Games (we not made them)</span></a></li>
+              <li class="mli"><a class="ksk_main_menu" href="chat.html"><span>Chat</span></a></li>
+              <li class="active_link"><a class="ksk_main_menu" href="jslav.videos.fi.html"><span>JSLAV.Videos.fi</span></a></li>
             </ul>
             <div class="clear"></div>
           </div>
@@ -71,7 +72,7 @@
         <div id="top-bar" class="ksk_container">
           <div class="ksk_container_wrapper" style="position: relative;">
             <div id="searchengine" class="ksk_relative_90">
-              <form action="/haku.html" method="post">
+              <form action="haku.html" method="post">
                 <div class="search_bar">
                   <input type="text" name="search" class="search_field" title="Hae sivuilta" value="Hae sivuilta" onclick="if (this.value == this.title) this.value = '';" onblur="if (this.value == '') this.value = 'Hae sivuilta';">
                   <input type="submit" class="search_bar_submit" value=" ">
@@ -80,7 +81,7 @@
             </div>
             <div id="logo_and_text_div">
               <div id="logo" class="ksk_logo_img" style="float:left; margin:0px;">
-                <a href="/" id="logo_href" title="Takaisin etusivulle">
+                <a href="index.html" id="logo_href" title="Takaisin etusivulle">
                   <img alt="" id="logo_holder" src="https://kotisivukone.fi/files/jslav.games.ota.fi/Screenshot_from_2025-05-20_17-45-16.png">
                 </a>
               </div>
@@ -94,7 +95,7 @@
           <div class="ksk_container_wrapper" style="position: relative;">
             <div id="mainimage_logo_and_text_div" style="position: absolute; width: 100%;">
               <div id="mainimage_logo" class="ksk_logo_img" style="float:left; margin:0px;">
-                <a href="/" id="mainimage_logo_href" title="Takaisin etusivulle">
+                <a href="index.html" id="mainimage_logo_href" title="Takaisin etusivulle">
                   <img alt="" id="mainimage_logo_holder" src="/www/pics/empty.gif">
                 </a>
               </div>
@@ -111,7 +112,18 @@
                 <div id="content_top"></div>
                 <div class="kskpages_container">
                   <!-- Your main content/components here -->
-                  <!-- ... -->
+                  <h2 style="color:#FFC95C;">Welcome to JSLAV.Videos.fi</h2>
+                  <p>Here you can find videos, downloads, and more related to JSLAV!</p>
+                  <!-- Example video embed -->
+                  <div style="margin:24px 0;">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                  </div>
+                  <!-- Example download button -->
+                  <a href="https://drive.google.com/file/d/1qlOtYkFeiS-CvrGI8UdDr7i2DNB05-zA/view?usp=drive_link" 
+                     style="background:#FFC95C;color:#232323;padding:12px 24px;border-radius:6px;font-weight:bold;text-decoration:none;display:inline-block;margin:12px 0;">
+                    Download JSLAV.zip
+                  </a>
+                  <!-- Add more content as needed -->
                 </div>
                 <div id="content_bottom"></div>
               </div>
@@ -133,13 +145,15 @@
               <div class="madpages_component">
                 <div class="kskpage_title_comp"><h1 class="madpages_element" style="margin-bottom:0px;margin-top:5px;margin-right:5px;text-align:left;margin-left:0px;">JSLAV</h1></div>
               </div>
-              <!-- ... more footer content ... -->
               <div class="madpages_component">
                 <div style="margin-bottom: 0px; margin-top: 0px; margin-right: 0px; text-align: center; margin-left: 0px;" class="kskpage_text_comp">
-                  <div class="madpages_element madpages_paragraph" style="display: block;"><p>Copyright © 2025 JSLAV.GAMES.FI
-                  </p></div>
+                  <div class="madpages_element madpages_paragraph" style="display: block;">
+                    <p>Copyright © 2025 JSLAV.GAMES.FI
+                    </p>
+                  </div>
                 </div>
               </div>
+              <!-- Add any additional footer sections here if needed -->
             </div>
           </div>
         </div>
