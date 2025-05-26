@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Other Games | jslav.games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat+Alternates|PT+Sans|Open+Sans">
+  <style>
+    body { background: #1B1B1B; color: #fff; font-family: 'Open Sans', Arial, sans-serif; margin: 0; }
+    header { background: #282828; text-align: center; padding: 30px 10px 10px 10px; }
+    header h1 { color: #FFC95C; font-family: 'Montserrat Alternates', cursive; }
+    nav { background: #222; }
+    nav ul { list-style: none; display: flex; justify-content: center; padding: 0; margin: 0; }
+    nav li { margin: 0 15px; }
+    nav a { color: #FFC95C; text-decoration: none; font-weight: bold; padding: 10px;}
+    nav a:hover { color: #fff; }
+    .main-content { max-width: 900px; margin: 30px auto; background: #232323; border-radius: 10px; padding: 30px;}
+    .img-section { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin: 24px 0;}
+    .img-section img { max-width: 340px; border-radius: 6px; border: 2px solid #444; margin-bottom: 10px; }
+    .img-desc { max-width: 340px; color: #ccc; }
+    .download-btn { background: #FFC95C; color: #232323; border: none; border-radius: 6px; padding: 14px 28px; font-size: 18px; font-weight: bold; margin: 12px 0; cursor: pointer; }
+    .download-btn:hover { background: #FFD97E; }
+    @media (max-width: 700px) {
+      header h1 { font-size: 36px; }
+      .main-content, header, nav { padding: 10px; }
+      .img-section { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Other Games</h1>
+</header>
+<nav>
+  <ul>
+    <li><a href="/">Front page</a></li>
+    <li><a href="uutiset.html">News</a></li>
+    <li><a href="jslav-games.html">JSLAV-Games</a></li>
+    <li><a href="chat.html">Chat</a></li>
+    <li><a href="videos.html">Videos</a></li>
+    <li><a href="games-we-not-made-them.html" style="color:#fff;">Other Games</a></li>
+  </ul>
+</nav>
+<section class="main-content">
+  <h2>Other Games by Community</h2>
+  
+  <div class="img-section">
+    <img src="muugames_kuva.png" alt="Muu peli">
+    <div class="img-desc">
+      <strong>Muu Peli</strong><br>
+      Kuvaus pelistä.<br>
+      <button class="download-btn" onclick="window.open('https://drive.google.com/file/d/ID/view')">Download MuuPeli.zip</button>
+    </div>
+  </div>
+
+  <!-- Lisää tähän lisää pelejä samalla rakenteella -->
+  
+</section>
+</body>
+</html>
