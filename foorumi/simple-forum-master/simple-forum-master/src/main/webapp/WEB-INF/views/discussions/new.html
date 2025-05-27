@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать новое обсуждение</title>
+</head>
+<body>
+<form th:method="POST" th:action="@{/discussions}" th:object="${discussion}">
+    <label for="username">Имя пользователя: </label><input type="text" th:field="*{username}" id="username"/>
+    <div style="color: red" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Username Error</div>
+    <br/>
+    <label for="topic">Тема: </label><input type="text" width="40px" th:field="*{topic}" id="topic"/>
+    <div style="color: red" th:if="${#fields.hasErrors('topic')}" th:errors="*{topic}">Username Error</div>
+    <br/>
+    <label for="text">Текст: </label><input type="text" width="100px" th:field="*{text}" id="text"/>
+    <div style="color: red" th:if="${#fields.hasErrors('text')}" th:errors="*{text}">Topic Error</div>
+
+    <input type="submit" value="created"/>
+</form>
+</body>
+</html>

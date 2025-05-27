@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${discussion.topic}"></title>
+</head>
+<body>
+<b th:text="${'<'+discussion.username+'>:' +discussion.topic}"/>
+<p th:text="${discussion.text}"/>
+<hr/>
+<table>
+    <tr th:each="comment : ${comments}">
+        <td th:text="${'<'+comment.username+'>:'}"></td>
+        <td th:text="${comment.text}"></td>
+    </tr>
+
+</table>
+
+<a href="/discussions">Назад</a>
+<a th:href="@{/discussions/{id}/new(id=${discussion.getId()})}">Добавить комментарий</a>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Осбуждения</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>Пользователь</th>
+        <th>Тема</th>
+        <th>Дата</th>
+    </tr>
+    <tr th:each="discussion : ${discussions}">
+        <td><b th:text="${'<' + discussion.username + '>'}">Username</b></td>
+        <td> <a th:href="@{/discussions/{id}(id=${discussion.getId()})}" th:text="${discussion.getTopic()}"></a></td>
+        <td> <p th:text="${discussion.commentTime()}"> Time </p> </td>
+        <td>
+            <form th:action="@{/discussions/{id}/edit(id=${discussion.getId()})}" >
+                <input type="submit" value="Изменить"/>
+            </form>
+        </td>
+        <td>
+            <form th:action="@{/discussions/{id}(id=${discussion.getId()})}" th:method="DELETE">
+                <input type="submit" value="Удалить"/>
+            </form>
+        </td>
+    </tr>
+</table>
+<a href="/discussions/new">Создать обсуждение</a>
+</body>
+</html>
