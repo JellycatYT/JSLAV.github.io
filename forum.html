@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Multi-section Forum</title>
+  <title>Multi-section Forum with Admin Delete</title>
   <style>
     body { font-family: Arial; background: #f0f0f0; margin: 0; }
     #container { display: flex; max-width: 1000px; margin: 30px auto; background: #fff; border-radius: 10px; min-height: 600px; }
@@ -18,8 +18,9 @@
     .post-user { color: #3366bb; font-size: 0.95em; }
     .reply { margin-left: 24px; border-left: 2px solid #eee; padding-left: 12px; margin-top: 8px; background: #fafafa; border-radius: 4px; }
     .actions { margin-top: 6px; }
-    .like-btn, .reply-btn { border: none; background: #eee; color: #333; padding: 2px 7px; margin-right: 6px; border-radius: 4px; cursor: pointer; }
+    .like-btn, .reply-btn, .delete-btn { border: none; background: #eee; color: #333; padding: 2px 7px; margin-right: 6px; border-radius: 4px; cursor: pointer; }
     .like-btn.liked { background: #aeeaae; color: #174317; }
+    .delete-btn { background: #faa; color: #a00; }
     .logout-btn { float: right; }
     #loginForm, #signupForm { margin-bottom: 1.2em; }
     #back-link { display: inline-block; margin-bottom: 18px; text-decoration: none; color: #3366bb; }
@@ -61,6 +62,13 @@
     </div>
   </div>
   <script>
+    // --------- Admin config ---------
+    const ADMIN_USERS = ["JellycatYT"]; // Lisää tähän käyttäjänimiä jos haluat useita admineja
+
+    function isAdmin() {
+      return ADMIN_USERS.includes(getCurrentUser());
+    }
+
     // --------- Channels ---------
     let currentChannel = 'General';
     function selectChannel(name) {
@@ -202,6 +210,7 @@
               👍 Like (<span id="like-count-${p.id}">${likeCount}</span>)
             </button>
             <button class="reply-btn" onclick="showReplyForm('${p.id}')">Reply</button>
+            ${isAdmin() ? `<button class="delete-btn" onclick="deletePost('${p.id}')">Delete</button>` : ''}
           </div>
           <div id="replies-${p.id}">
             ${renderReplies(p.replies || [], p.id)}
@@ -219,7 +228,6 @@
     }
     function renderPostContent(p) {
       if (p.type === 'youtube') {
-        // Try to extract YouTube video ID from link or plain text
         let url = p.content.trim();
         let idMatch = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         let id = idMatch ? idMatch[1] : null;
@@ -229,26 +237,24 @@
         return `<a href="${url}" target="_blank">${url}</a>`;
       }
       if (p.type === 'audio') {
-        // Audio/MP3/WAV link
         return `<audio controls src="${p.content.trim()}" class="audio-thumb"></audio>
           <div><a href="${p.content.trim()}" target="_blank">[Open audio]</a></div>`;
       }
       if (p.type === 'midi') {
-        // MIDI file link
         return `<div><a href="${p.content.trim()}" target="_blank">🎹 Listen/download MIDI</a></div>`;
       }
       if (p.type === 'link') {
         return `<a href="${p.content.trim()}" target="_blank">${p.content.trim()}</a>`;
       }
-      // Default: text
       return p.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
     }
     function renderReplies(replies, postId) {
       if (!replies || !replies.length) return "";
-      return replies.map(r => `
+      return replies.map((r, idx) => `
         <div class="reply">
           <div class="post-time">${r.time} <span class="post-user">by ${r.user}</span></div>
           <div>${r.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>")}</div>
+          ${isAdmin() ? `<button class="delete-btn" style="margin-top:6px;" onclick="deleteReply('${postId}',${idx})">Delete</button>` : ''}
         </div>
       `).join('');
     }
@@ -261,7 +267,6 @@
       let likes = getLikes();
       likes[postId] = likes[postId] || [];
       if (likes[postId].includes(user)) {
-        // Unlike
         likes[postId] = likes[postId].filter(u => u !== user);
       } else {
         likes[postId].push(user);
@@ -297,6 +302,27 @@
       savePosts(posts);
       hideReplyForm(postId);
       renderPosts();
+    }
+
+    // --------- Poistotoiminto ---------
+    function deletePost(postId) {
+      if (!isAdmin()) { alert("Only admins can delete."); return; }
+      if (!confirm("Delete this post?")) return;
+      let posts = getPosts();
+      posts = posts.filter(p => p.id !== postId);
+      savePosts(posts);
+      renderPosts();
+    }
+    function deleteReply(postId, replyIdx) {
+      if (!isAdmin()) { alert("Only admins can delete."); return; }
+      if (!confirm("Delete this reply?")) return;
+      let posts = getPosts();
+      const post = posts.find(p => p.id === postId);
+      if (post && post.replies && post.replies[replyIdx]) {
+        post.replies.splice(replyIdx,1);
+        savePosts(posts);
+        renderPosts();
+      }
     }
 
     // --------- Add new post ---------
