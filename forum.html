@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Multi-section Forum with Admin Delete</title>
+  <title>Reddit-style Multi-section Forum</title>
   <style>
     body { font-family: Arial; background: #f0f0f0; margin: 0; }
-    #container { display: flex; max-width: 1000px; margin: 30px auto; background: #fff; border-radius: 10px; min-height: 600px; }
-    #sidebar { width: 180px; background: #eee; border-radius: 10px 0 0 10px; padding: 24px 12px 12px 12px; }
+    #container { display: flex; max-width: 1100px; margin: 30px auto; background: #fff; border-radius: 10px; min-height: 650px; box-shadow: 0 2px 16px #bbb5; }
+    #sidebar { width: 200px; background: #eee; border-radius: 10px 0 0 10px; padding: 24px 12px 12px 12px; }
     #sidebar h3 { margin-top: 0; }
     .channel { margin-bottom: 12px; cursor: pointer; padding: 6px 12px; border-radius: 5px; }
     .channel.selected { background: #d2e6fa; font-weight: bold; }
     #forum { flex: 1; padding: 24px 32px; }
-    .post { border-bottom: 1px solid #eee; margin-bottom: 1em; padding-bottom: 1em; }
+    .post { border-bottom: 1px solid #eee; margin-bottom: 1.2em; padding-bottom: 1.1em; }
     .post:last-child { border-bottom: none; }
     .post-title { font-weight: bold; font-size: 1.1em; }
     .post-time { color: #666; font-size: 0.9em; }
@@ -26,8 +26,13 @@
     #back-link { display: inline-block; margin-bottom: 18px; text-decoration: none; color: #3366bb; }
     #back-link:hover { text-decoration: underline; }
     #post-type { margin-bottom: 5px; }
-    .media-thumb { max-width: 320px; max-height: 180px; display: block; margin: 8px 0; border-radius: 4px; }
+    .media-thumb { max-width: 400px; max-height: 300px; display: block; margin: 8px 0; border-radius: 8px; }
     .audio-thumb { margin-top: 10px; }
+    .file-section { margin-top:8px; font-size:0.96em; }
+    .file-section label { font-weight: bold; }
+    .file-download { display:inline-block; margin-left: 8px; color: #3366bb; text-decoration: underline; cursor:pointer; }
+    .admin-badge { background: #3366bb; color: #fff; font-size:0.85em; border-radius:4px; padding: 2px 6px; margin-left:5px; }
+    #fileInput { margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -38,22 +43,31 @@
       <div class="channel" onclick="selectChannel('Videos')" id="ch-Videos">Videos</div>
       <div class="channel" onclick="selectChannel('Music')" id="ch-Music">Music</div>
       <div class="channel" onclick="selectChannel('MIDI')" id="ch-MIDI">MIDI</div>
+      <div class="channel" onclick="selectChannel('Games')" id="ch-Games">Games</div>
     </div>
     <div id="forum">
       <a href="index.html" id="back-link">&larr; Back to front page</a>
       <button class="logout-btn" onclick="logout()" style="display:none;" id="logoutBtn">Log out (<span id="currentUser"></span>)</button>
       <div id="authForms"></div>
       <div id="mainContent" style="display:none;">
-        <form id="postForm">
+        <form id="postForm" autocomplete="off">
           <input type="text" id="title" placeholder="Title" required style="width:100%;margin-bottom:5px;">
           <select id="post-type" required>
             <option value="text">Text</option>
-            <option value="youtube">YouTube video</option>
-            <option value="audio">Audio/MP3/WAV link</option>
-            <option value="midi">MIDI file link</option>
+            <option value="image">Image (URL)</option>
+            <option value="youtube">YouTube video (URL)</option>
+            <option value="audio">Audio/MP3/WAV (URL)</option>
+            <option value="midi">MIDI file (URL)</option>
+            <option value="game">Game link (itch.io/html/zip/exe URL)</option>
             <option value="link">Other link</option>
+            <option value="localfile">Attach file (only for yourself)</option>
           </select>
           <textarea id="content" placeholder="Write your message or paste a link..." required style="width:100%;height:60px;"></textarea>
+          <div class="file-section" id="fileSection" style="display:none;">
+            <label for="fileInput">Attach file (max 4MB):</label>
+            <input type="file" id="fileInput" accept="*/*">
+            <span id="fileName"></span>
+          </div>
           <button type="submit">Post</button>
         </form>
         <h3 id="channel-title">General</h3>
@@ -63,7 +77,8 @@
   </div>
   <script>
     // --------- Admin config ---------
-    const ADMIN_USERS = ["JellycatYT"]; // Lisää tähän käyttäjänimiä jos haluat useita admineja
+    // Lisää tähän käyttäjänimet, joilla on admin-oikeudet
+    const ADMIN_USERS = ["JellycatYT", "MyMod1", "SuperUser"];
 
     function isAdmin() {
       return ADMIN_USERS.includes(getCurrentUser());
@@ -73,7 +88,7 @@
     let currentChannel = 'General';
     function selectChannel(name) {
       currentChannel = name;
-      for (const ch of ['General','Videos','Music','MIDI']) {
+      for (const ch of ['General','Videos','Music','MIDI','Games']) {
         document.getElementById('ch-'+ch).className = 'channel' + (ch === name ? ' selected' : '');
       }
       document.getElementById('channel-title').textContent = name;
@@ -178,16 +193,16 @@
 
     // --------- Posts ---------
     function getPosts() {
-      return JSON.parse(localStorage.getItem('forumPostsV3') || "[]");
+      return JSON.parse(localStorage.getItem('forumPostsV4') || "[]");
     }
     function savePosts(posts) {
-      localStorage.setItem('forumPostsV3', JSON.stringify(posts));
+      localStorage.setItem('forumPostsV4', JSON.stringify(posts));
     }
     function getLikes() {
-      return JSON.parse(localStorage.getItem('forumLikesV3') || '{}');
+      return JSON.parse(localStorage.getItem('forumLikesV4') || '{}');
     }
     function saveLikes(likes) {
-      localStorage.setItem('forumLikesV3', JSON.stringify(likes));
+      localStorage.setItem('forumLikesV4', JSON.stringify(likes));
     }
     function renderPosts() {
       const posts = getPosts();
@@ -202,9 +217,10 @@
         let likeCount = (likes[p.id] && likes[p.id].length) ? likes[p.id].length : 0;
         let liked = user && likes[p.id] && likes[p.id].includes(user);
         el.innerHTML = `
-          <div class="post-title">${p.title}</div>
+          <div class="post-title">${p.title}${isAdminUser(p.user) ? ' <span class="admin-badge">admin</span>' : ''}</div>
           <div class="post-time">${p.time} <span class="post-user">by ${p.user}</span></div>
           <div>${renderPostContent(p)}</div>
+          ${renderLocalFileSection(p)}
           <div class="actions">
             <button class="like-btn${liked ? ' liked' : ''}" onclick="likePost('${p.id}')">
               👍 Like (<span id="like-count-${p.id}">${likeCount}</span>)
@@ -227,6 +243,9 @@
       });
     }
     function renderPostContent(p) {
+      if (p.type === 'image') {
+        return `<img src="${p.content.trim()}" alt="image" class="media-thumb">`;
+      }
       if (p.type === 'youtube') {
         let url = p.content.trim();
         let idMatch = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -243,16 +262,36 @@
       if (p.type === 'midi') {
         return `<div><a href="${p.content.trim()}" target="_blank">🎹 Listen/download MIDI</a></div>`;
       }
+      if (p.type === 'game') {
+        return `<a href="${p.content.trim()}" target="_blank">🎮 Play/download game</a>`;
+      }
       if (p.type === 'link') {
         return `<a href="${p.content.trim()}" target="_blank">${p.content.trim()}</a>`;
       }
+      if (p.type === 'localfile') {
+        return `<i>Attached file (only visible/downloadable for yourself):</i>`;
+      }
       return p.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+    }
+    function renderLocalFileSection(p) {
+      // Show "download file" only if post.type === localfile and file exists in this user's LocalStorage
+      if (p.type === 'localfile') {
+        let key = 'userFile_'+p.localFileName;
+        let dataUrl = localStorage.getItem(key);
+        if (dataUrl) {
+          return `<div class="file-section">Your attached file: <b>${p.localFileName}</b>
+            <a class="file-download" onclick="downloadLocalFile('${p.localFileName}')">Download</a></div>`;
+        } else {
+          return `<div class="file-section" style="color:#a00;">File not found in your browser (only the uploader can see/download it)</div>`;
+        }
+      }
+      return "";
     }
     function renderReplies(replies, postId) {
       if (!replies || !replies.length) return "";
       return replies.map((r, idx) => `
         <div class="reply">
-          <div class="post-time">${r.time} <span class="post-user">by ${r.user}</span></div>
+          <div class="post-time">${r.time} <span class="post-user">by ${r.user}</span>${isAdminUser(r.user) ? ' <span class="admin-badge">admin</span>' : ''}</div>
           <div>${r.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>")}</div>
           ${isAdmin() ? `<button class="delete-btn" style="margin-top:6px;" onclick="deleteReply('${postId}',${idx})">Delete</button>` : ''}
         </div>
@@ -303,7 +342,9 @@
       hideReplyForm(postId);
       renderPosts();
     }
-
+    function isAdminUser(username) {
+      return ADMIN_USERS.includes(username);
+    }
     // --------- Poistotoiminto ---------
     function deletePost(postId) {
       if (!isAdmin()) { alert("Only admins can delete."); return; }
@@ -324,6 +365,41 @@
         renderPosts();
       }
     }
+    // --------- Local file attach & download ---------
+    let attachedFile = null;
+    let attachedFileName = "";
+    document.getElementById('post-type').onchange = function() {
+      if (this.value === 'localfile') {
+        document.getElementById('fileSection').style.display = '';
+      } else {
+        document.getElementById('fileSection').style.display = 'none';
+        attachedFile = null; attachedFileName = ""; document.getElementById('fileName').innerText = "";
+        document.getElementById('fileInput').value = "";
+      }
+    };
+    document.getElementById('fileInput').onchange = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 4*1024*1024) { alert("File too large (max 4MB)"); this.value = ""; return; }
+      attachedFileName = file.name;
+      document.getElementById('fileName').innerText = file.name;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        attachedFile = evt.target.result;
+      }
+      reader.readAsDataURL(file);
+    };
+    function downloadLocalFile(fileName) {
+      let key = 'userFile_'+fileName;
+      let dataUrl = localStorage.getItem(key);
+      if (!dataUrl) { alert("File not found in your browser."); return; }
+      let a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>document.body.removeChild(a),100);
+    }
 
     // --------- Add new post ---------
     document.getElementById('postForm').onsubmit = function(e) {
@@ -336,9 +412,9 @@
       const title = document.getElementById('title').value.trim();
       const content = document.getElementById('content').value.trim();
       const type = document.getElementById('post-type').value;
-      if (!title || !content) return;
+      if (!title || (!content && type !== 'localfile')) return;
       const posts = getPosts();
-      posts.unshift({
+      let postObj = {
         id: 'p' + Date.now() + Math.floor(Math.random()*99999),
         title,
         content,
@@ -347,10 +423,24 @@
         channel: currentChannel,
         time: new Date().toLocaleString(),
         replies: []
-      });
+      };
+      if (type === 'localfile') {
+        if (!attachedFile || !attachedFileName) { alert("Attach a file first!"); return; }
+        // File saved only for this user
+        localStorage.setItem('userFile_'+attachedFileName, attachedFile);
+        postObj.localFileName = attachedFileName;
+      }
+      posts.unshift(postObj);
       savePosts(posts);
       document.getElementById('title').value = "";
       document.getElementById('content').value = "";
+      if (type === 'localfile') {
+        attachedFile = null; attachedFileName = "";
+        document.getElementById('fileName').innerText = "";
+        document.getElementById('fileInput').value = "";
+        document.getElementById('fileSection').style.display = 'none';
+        document.getElementById('post-type').value = 'text';
+      }
       renderPosts();
     }
 
