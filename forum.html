@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Reddit-style Multi-section Forum</title>
+  <title>Advanced Forum demo</title>
   <style>
     body { font-family: Arial; background: #f0f0f0; margin: 0; }
-    #container { display: flex; max-width: 1100px; margin: 30px auto; background: #fff; border-radius: 10px; min-height: 650px; box-shadow: 0 2px 16px #bbb5; }
-    #sidebar { width: 200px; background: #eee; border-radius: 10px 0 0 10px; padding: 24px 12px 12px 12px; }
+    #container { display: flex; max-width: 1100px; margin: 30px auto; background: #fff; border-radius: 10px; min-height: 700px; box-shadow: 0 2px 16px #bbb5; }
+    #sidebar { width: 220px; background: #eee; border-radius: 10px 0 0 10px; padding: 24px 12px 12px 12px; }
     #sidebar h3 { margin-top: 0; }
     .channel { margin-bottom: 12px; cursor: pointer; padding: 6px 12px; border-radius: 5px; }
     .channel.selected { background: #d2e6fa; font-weight: bold; }
+    .channel.user { background: #eafbe3; }
     #forum { flex: 1; padding: 24px 32px; }
     .post { border-bottom: 1px solid #eee; margin-bottom: 1.2em; padding-bottom: 1.1em; }
     .post:last-child { border-bottom: none; }
@@ -18,9 +19,11 @@
     .post-user { color: #3366bb; font-size: 0.95em; }
     .reply { margin-left: 24px; border-left: 2px solid #eee; padding-left: 12px; margin-top: 8px; background: #fafafa; border-radius: 4px; }
     .actions { margin-top: 6px; }
-    .like-btn, .reply-btn, .delete-btn { border: none; background: #eee; color: #333; padding: 2px 7px; margin-right: 6px; border-radius: 4px; cursor: pointer; }
+    .like-btn, .reply-btn, .delete-btn, .report-btn { border: none; background: #eee; color: #333; padding: 2px 7px; margin-right: 6px; border-radius: 4px; cursor: pointer; }
     .like-btn.liked { background: #aeeaae; color: #174317; }
     .delete-btn { background: #faa; color: #a00; }
+    .report-btn { background: #ffc; color: #c80; }
+    .ban-btn { background: #333; color: #fff; }
     .logout-btn { float: right; }
     #loginForm, #signupForm { margin-bottom: 1.2em; }
     #back-link { display: inline-block; margin-bottom: 18px; text-decoration: none; color: #3366bb; }
@@ -28,27 +31,37 @@
     #post-type { margin-bottom: 5px; }
     .media-thumb { max-width: 400px; max-height: 300px; display: block; margin: 8px 0; border-radius: 8px; }
     .audio-thumb { margin-top: 10px; }
-    .file-section { margin-top:8px; font-size:0.96em; }
-    .file-section label { font-weight: bold; }
-    .file-download { display:inline-block; margin-left: 8px; color: #3366bb; text-decoration: underline; cursor:pointer; }
-    .admin-badge { background: #3366bb; color: #fff; font-size:0.85em; border-radius:4px; padding: 2px 6px; margin-left:5px; }
     #fileInput { margin-top: 4px; }
+    .file-section { margin-top:8px; font-size:0.96em; }
+    .profile-img { width: 56px; height: 56px; border-radius: 8px; background: #ccc; object-fit: cover; }
+    .profile-section { background: #f8f8f8; border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: center; }
+    .admin-badge { background: #3366bb; color: #fff; font-size:0.85em; border-radius:4px; padding: 2px 6px; margin-left:5px; }
+    .pm-btn { background: #d2e6fa; color: #174317; }
+    #createChannelForm { margin-bottom: 10px; }
+    .banned { color: #888; font-style: italic; }
+    #adminPanel { background: #f8f8ff; border: 2px solid #3366bb; border-radius: 8px; margin-bottom: 15px; padding: 10px; }
+    #reportsPanel { background: #fff9f0; border: 1.5px solid #d4b96c; border-radius: 8px; margin-bottom: 15px; padding: 10px; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <div id="container">
     <div id="sidebar">
+      <div id="profileBox"></div>
+      <button onclick="editProfile()">Edit profile</button>
       <h3>Channels</h3>
-      <div class="channel selected" onclick="selectChannel('General')" id="ch-General">General</div>
-      <div class="channel" onclick="selectChannel('Videos')" id="ch-Videos">Videos</div>
-      <div class="channel" onclick="selectChannel('Music')" id="ch-Music">Music</div>
-      <div class="channel" onclick="selectChannel('MIDI')" id="ch-MIDI">MIDI</div>
-      <div class="channel" onclick="selectChannel('Games')" id="ch-Games">Games</div>
+      <form id="createChannelForm" onsubmit="createChannel(event)">
+        <input type="text" id="newChannelName" placeholder="New channel..." required maxlength="20" style="width:90%;">
+        <button type="submit">Add</button>
+      </form>
+      <div id="channelList"></div>
     </div>
     <div id="forum">
       <a href="index.html" id="back-link">&larr; Back to front page</a>
       <button class="logout-btn" onclick="logout()" style="display:none;" id="logoutBtn">Log out (<span id="currentUser"></span>)</button>
       <div id="authForms"></div>
+      <div id="adminPanel" class="hidden"></div>
+      <div id="reportsPanel" class="hidden"></div>
       <div id="mainContent" style="display:none;">
         <form id="postForm" autocomplete="off">
           <input type="text" id="title" placeholder="Title" required style="width:100%;margin-bottom:5px;">
@@ -73,45 +86,123 @@
         <h3 id="channel-title">General</h3>
         <div id="posts"></div>
       </div>
+      <div id="pmPanel" class="hidden"></div>
     </div>
   </div>
   <script>
     // --------- Admin config ---------
-    // Lisää tähän käyttäjänimet, joilla on admin-oikeudet
-    const ADMIN_USERS = ["JSLAV", "MyMod1", "SuperUser"];
+    const ADMIN_USERS = ["JellycatYT", "MyMod1", "SuperUser"];
 
-    function isAdmin() {
-      return ADMIN_USERS.includes(getCurrentUser());
+    function isAdmin() { return ADMIN_USERS.includes(getCurrentUser()); }
+    function isAdminUser(username) { return ADMIN_USERS.includes(username); }
+    // --------- Bans ---------
+    function getBans() {
+      return JSON.parse(localStorage.getItem('forumBans') || '{}');
+    }
+    function setBan(username, until) {
+      let bans = getBans();
+      bans[username] = until;
+      localStorage.setItem('forumBans', JSON.stringify(bans));
+    }
+    function isBanned(username) {
+      let bans = getBans();
+      if (!bans[username]) return false;
+      if (Date.now() > bans[username]) { setBan(username, null); return false; }
+      return bans[username];
     }
 
     // --------- Channels ---------
+    function getChannels() {
+      let chs = JSON.parse(localStorage.getItem('forumChannels') || '["General","Videos","Music","MIDI","Games"]');
+      if (!chs.includes("General")) chs.unshift("General");
+      return chs;
+    }
+    function saveChannels(chs) { localStorage.setItem('forumChannels', JSON.stringify(chs)); }
     let currentChannel = 'General';
+    function renderChannels() {
+      let chs = getChannels();
+      let html = "";
+      chs.forEach(ch => {
+        html += `<div class="channel${currentChannel===ch?' selected':''}${isUserChannel(ch)?' user':''}" onclick="selectChannel('${ch.replace(/'/g,"\\'")}')" id="ch-${ch.replace(/\s+/g,'_')}">${ch}</div>`;
+      });
+      document.getElementById('channelList').innerHTML = html;
+    }
+    function isUserChannel(ch) {
+      return !["General","Videos","Music","MIDI","Games"].includes(ch);
+    }
     function selectChannel(name) {
       currentChannel = name;
-      for (const ch of ['General','Videos','Music','MIDI','Games']) {
-        document.getElementById('ch-'+ch).className = 'channel' + (ch === name ? ' selected' : '');
-      }
+      renderChannels();
       document.getElementById('channel-title').textContent = name;
       renderPosts();
     }
+    function createChannel(e) {
+      e.preventDefault();
+      let name = document.getElementById('newChannelName').value.trim();
+      if (!name || getChannels().includes(name)) return;
+      let chs = getChannels();
+      chs.push(name);
+      saveChannels(chs);
+      document.getElementById('newChannelName').value = "";
+      renderChannels();
+    }
 
-    // --------- User Auth ---------
-    function getUsers() {
-      return JSON.parse(localStorage.getItem('forumUsers') || '{}');
+    // --------- User Auth, Profiles ---------
+    function getUsers() { return JSON.parse(localStorage.getItem('forumUsers') || '{}'); }
+    function saveUsers(users) { localStorage.setItem('forumUsers', JSON.stringify(users)); }
+    function setCurrentUser(username) { if (username) localStorage.setItem('forumCurrentUser', username); else localStorage.removeItem('forumCurrentUser'); }
+    function getCurrentUser() { return localStorage.getItem('forumCurrentUser'); }
+    function getProfile(username) {
+      let users = getUsers();
+      return users[username] && users[username].profile ? users[username].profile : { desc:"", img:"" };
     }
-    function saveUsers(users) {
-      localStorage.setItem('forumUsers', JSON.stringify(users));
+    function setProfile(username, profile) {
+      let users = getUsers();
+      users[username] = users[username] || {};
+      users[username].profile = profile;
+      saveUsers(users);
     }
-    function setCurrentUser(username) {
-      if (username) localStorage.setItem('forumCurrentUser', username);
-      else localStorage.removeItem('forumCurrentUser');
+    function renderProfileBox() {
+      let user = getCurrentUser();
+      let html = "";
+      if (user) {
+        let p = getProfile(user);
+        html += `<div class="profile-section">
+        <img src="${p.img||'https://ui-avatars.com/api/?name='+encodeURIComponent(user)+'&size=96'}" class="profile-img"><br>
+        <b>${user}</b><br>
+        <small>${p.desc?escapeHtml(p.desc):""}</small>
+        </div>`;
+      } else {
+        html = `<div style="margin-bottom:12px;color:#888;">Not logged in</div>`;
+      }
+      document.getElementById("profileBox").innerHTML = html;
     }
-    function getCurrentUser() {
-      return localStorage.getItem('forumCurrentUser');
+    function editProfile() {
+      let user = getCurrentUser(); if (!user) return;
+      let p = getProfile(user);
+      let desc = prompt("Profile description:", p.desc||"");
+      if (desc===null) return;
+      let imgInput = document.createElement('input');
+      imgInput.type = "file";
+      imgInput.accept = "image/*";
+      imgInput.onchange = function(e) {
+        let file = e.target.files[0];
+        if (!file) { setProfile(user, {desc, img:p.img}); renderProfileBox(); return; }
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+          setProfile(user, {desc, img:evt.target.result});
+          renderProfileBox();
+        }
+        reader.readAsDataURL(file);
+      };
+      setProfile(user, {desc, img:p.img});
+      renderProfileBox();
+      setTimeout(()=>imgInput.click(), 300);
     }
 
     // --------- Auth Forms ---------
     function renderAuthForms() {
+      renderProfileBox();
       const authDiv = document.getElementById('authForms');
       if (getCurrentUser()) {
         document.getElementById('mainContent').style.display = '';
@@ -157,11 +248,18 @@
       e.preventDefault();
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value;
+      if (isBanned(username)) {
+        alert("You are banned until "+new Date(isBanned(username)).toLocaleString());
+        return;
+      }
       const users = getUsers();
       if (users[username] && users[username].password === password) {
         setCurrentUser(username);
         renderAuthForms();
         loadPosts();
+        renderChannels();
+        renderAdminPanel();
+        renderReportsPanel();
       } else {
         document.getElementById('login-error').innerText = "Wrong username or password.";
       }
@@ -174,6 +272,10 @@
         document.getElementById('signup-error').innerText = "Username and password must be at least 3 characters.";
         return;
       }
+      if (/[^a-zA-Z0-9_\-]/.test(username)) {
+        document.getElementById('signup-error').innerText = "Only a-z, A-Z, 0-9, _ and - allowed in username.";
+        return;
+      }
       const users = getUsers();
       if (users[username]) {
         document.getElementById('signup-error').innerText = "Username already exists.";
@@ -184,26 +286,25 @@
       setCurrentUser(username);
       renderAuthForms();
       loadPosts();
+      renderChannels();
+      renderAdminPanel();
+      renderReportsPanel();
     }
     function logout() {
       setCurrentUser(null);
       renderAuthForms();
       loadPosts();
+      renderChannels();
+      renderAdminPanel();
+      renderReportsPanel();
+      hidePMPanel();
     }
 
     // --------- Posts ---------
-    function getPosts() {
-      return JSON.parse(localStorage.getItem('forumPostsV4') || "[]");
-    }
-    function savePosts(posts) {
-      localStorage.setItem('forumPostsV4', JSON.stringify(posts));
-    }
-    function getLikes() {
-      return JSON.parse(localStorage.getItem('forumLikesV4') || '{}');
-    }
-    function saveLikes(likes) {
-      localStorage.setItem('forumLikesV4', JSON.stringify(likes));
-    }
+    function getPosts() { return JSON.parse(localStorage.getItem('forumPostsV5') || "[]"); }
+    function savePosts(posts) { localStorage.setItem('forumPostsV5', JSON.stringify(posts)); }
+    function getLikes() { return JSON.parse(localStorage.getItem('forumLikesV5') || '{}'); }
+    function saveLikes(likes) { localStorage.setItem('forumLikesV5', JSON.stringify(likes)); }
     function renderPosts() {
       const posts = getPosts();
       const likes = getLikes();
@@ -212,21 +313,27 @@
       const channel = currentChannel;
       postsDiv.innerHTML = "";
       posts.filter(p => p.channel === channel).forEach((p, idx) => {
+        let banned = isBanned(p.user);
         const el = document.createElement('div');
-        el.className = "post";
+        el.className = "post" + (banned?" banned":"");
         let likeCount = (likes[p.id] && likes[p.id].length) ? likes[p.id].length : 0;
         let liked = user && likes[p.id] && likes[p.id].includes(user);
         el.innerHTML = `
           <div class="post-title">${p.title}${isAdminUser(p.user) ? ' <span class="admin-badge">admin</span>' : ''}</div>
-          <div class="post-time">${p.time} <span class="post-user">by ${p.user}</span></div>
-          <div>${renderPostContent(p)}</div>
+          <div class="post-time">${p.time} <span class="post-user">by ${p.user}</span>
+            ${p.user!==user?`<button class="pm-btn" onclick="showPMPanel('${p.user}')">Private msg</button>`:""}
+            ${banned?`<span class="banned">(banned)</span>`:""}
+          </div>
+          <div>${banned?"[Removed]":renderPostContent(p)}</div>
           ${renderLocalFileSection(p)}
           <div class="actions">
             <button class="like-btn${liked ? ' liked' : ''}" onclick="likePost('${p.id}')">
               👍 Like (<span id="like-count-${p.id}">${likeCount}</span>)
             </button>
             <button class="reply-btn" onclick="showReplyForm('${p.id}')">Reply</button>
-            ${isAdmin() ? `<button class="delete-btn" onclick="deletePost('${p.id}')">Delete</button>` : ''}
+            <button class="report-btn" onclick="reportPost('${p.id}')">Report</button>
+            ${isAdmin()? `<button class="delete-btn" onclick="deletePost('${p.id}')">Delete</button>`:""}
+            ${isAdmin()? `<button class="ban-btn" onclick="banUser('${p.user}')">Ban user</button>`:""}
           </div>
           <div id="replies-${p.id}">
             ${renderReplies(p.replies || [], p.id)}
@@ -243,38 +350,23 @@
       });
     }
     function renderPostContent(p) {
-      if (p.type === 'image') {
-        return `<img src="${p.content.trim()}" alt="image" class="media-thumb">`;
-      }
+      if (p.type === 'image') return `<img src="${p.content.trim()}" alt="image" class="media-thumb">`;
       if (p.type === 'youtube') {
         let url = p.content.trim();
         let idMatch = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         let id = idMatch ? idMatch[1] : null;
-        if (id) {
-          return `<iframe width="320" height="180" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen class="media-thumb"></iframe>`;
-        }
+        if (id) return `<iframe width="320" height="180" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen class="media-thumb"></iframe>`;
         return `<a href="${url}" target="_blank">${url}</a>`;
       }
-      if (p.type === 'audio') {
-        return `<audio controls src="${p.content.trim()}" class="audio-thumb"></audio>
+      if (p.type === 'audio') return `<audio controls src="${p.content.trim()}" class="audio-thumb"></audio>
           <div><a href="${p.content.trim()}" target="_blank">[Open audio]</a></div>`;
-      }
-      if (p.type === 'midi') {
-        return `<div><a href="${p.content.trim()}" target="_blank">🎹 Listen/download MIDI</a></div>`;
-      }
-      if (p.type === 'game') {
-        return `<a href="${p.content.trim()}" target="_blank">🎮 Play/download game</a>`;
-      }
-      if (p.type === 'link') {
-        return `<a href="${p.content.trim()}" target="_blank">${p.content.trim()}</a>`;
-      }
-      if (p.type === 'localfile') {
-        return `<i>Attached file (only visible/downloadable for yourself):</i>`;
-      }
-      return p.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+      if (p.type === 'midi') return `<div><a href="${p.content.trim()}" target="_blank">🎹 Listen/download MIDI</a></div>`;
+      if (p.type === 'game') return `<a href="${p.content.trim()}" target="_blank">🎮 Play/download game</a>`;
+      if (p.type === 'link') return `<a href="${p.content.trim()}" target="_blank">${p.content.trim()}</a>`;
+      if (p.type === 'localfile') return `<i>Attached file (only visible/downloadable for yourself):</i>`;
+      return escapeHtml(p.content).replace(/\n/g,"<br>");
     }
     function renderLocalFileSection(p) {
-      // Show "download file" only if post.type === localfile and file exists in this user's LocalStorage
       if (p.type === 'localfile') {
         let key = 'userFile_'+p.localFileName;
         let dataUrl = localStorage.getItem(key);
@@ -292,43 +384,35 @@
       return replies.map((r, idx) => `
         <div class="reply">
           <div class="post-time">${r.time} <span class="post-user">by ${r.user}</span>${isAdminUser(r.user) ? ' <span class="admin-badge">admin</span>' : ''}</div>
-          <div>${r.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>")}</div>
-          ${isAdmin() ? `<button class="delete-btn" style="margin-top:6px;" onclick="deleteReply('${postId}',${idx})">Delete</button>` : ''}
+          <div>${escapeHtml(r.content).replace(/\n/g,"<br>")}</div>
+          <button class="report-btn" onclick="reportReply('${postId}',${idx})">Report</button>
+          ${isAdmin()?`<button class="delete-btn" onclick="deleteReply('${postId}',${idx})">Delete</button>
+          <button class="ban-btn" onclick="banUser('${r.user}')">Ban user</button>`:""}
         </div>
       `).join('');
     }
     function likePost(postId) {
       const user = getCurrentUser();
-      if (!user) {
-        alert("You must be logged in to like posts.");
-        return;
-      }
+      if (!user) { alert("You must be logged in to like posts."); return; }
       let likes = getLikes();
       likes[postId] = likes[postId] || [];
-      if (likes[postId].includes(user)) {
-        likes[postId] = likes[postId].filter(u => u !== user);
-      } else {
-        likes[postId].push(user);
-      }
+      if (likes[postId].includes(user)) likes[postId] = likes[postId].filter(u => u !== user);
+      else likes[postId].push(user);
       saveLikes(likes);
       renderPosts();
     }
     function showReplyForm(postId) {
-      if (!getCurrentUser()) {
-        alert("You must be logged in to reply.");
-        return;
-      }
+      if (!getCurrentUser()) { alert("You must be logged in to reply."); return; }
       document.getElementById('reply-form-' + postId).style.display = '';
       document.getElementById('reply-content-' + postId).focus();
     }
-    function hideReplyForm(postId) {
-      document.getElementById('reply-form-' + postId).style.display = 'none';
-    }
+    function hideReplyForm(postId) { document.getElementById('reply-form-' + postId).style.display = 'none'; }
     function submitReply(e, postId) {
       e.preventDefault();
       const content = document.getElementById('reply-content-' + postId).value.trim();
       if (!content) return;
       const user = getCurrentUser();
+      if (isBanned(user)) { alert("You are banned!"); return; }
       const posts = getPosts();
       const postIdx = posts.findIndex(p => p.id === postId);
       if (postIdx === -1) return;
@@ -342,9 +426,6 @@
       hideReplyForm(postId);
       renderPosts();
     }
-    function isAdminUser(username) {
-      return ADMIN_USERS.includes(username);
-    }
     // --------- Poistotoiminto ---------
     function deletePost(postId) {
       if (!isAdmin()) { alert("Only admins can delete."); return; }
@@ -353,6 +434,7 @@
       posts = posts.filter(p => p.id !== postId);
       savePosts(posts);
       renderPosts();
+      renderReportsPanel();
     }
     function deleteReply(postId, replyIdx) {
       if (!isAdmin()) { alert("Only admins can delete."); return; }
@@ -363,41 +445,42 @@
         post.replies.splice(replyIdx,1);
         savePosts(posts);
         renderPosts();
+        renderReportsPanel();
       }
     }
+    // --------- Bannaus ---------
+    function banUser(username) {
+      if (!isAdmin()) return;
+      let time = prompt("Ban "+username+" for how many hours? (0 = forever)", "24");
+      if (time===null) return;
+      let until = (parseInt(time)||0) === 0 ? Date.now()+365*24*60*60*1000 : Date.now() + parseInt(time)*60*60*1000;
+      setBan(username, until);
+      alert(username+" banned until "+new Date(until).toLocaleString());
+      renderPosts();
+    }
+
     // --------- Local file attach & download ---------
-    let attachedFile = null;
-    let attachedFileName = "";
+    let attachedFile = null, attachedFileName = "";
     document.getElementById('post-type').onchange = function() {
-      if (this.value === 'localfile') {
-        document.getElementById('fileSection').style.display = '';
-      } else {
-        document.getElementById('fileSection').style.display = 'none';
-        attachedFile = null; attachedFileName = ""; document.getElementById('fileName').innerText = "";
-        document.getElementById('fileInput').value = "";
+      if (this.value === 'localfile') document.getElementById('fileSection').style.display = '';
+      else {
+        document.getElementById('fileSection').style.display = 'none'; attachedFile = null; attachedFileName = ""; document.getElementById('fileName').innerText = ""; document.getElementById('fileInput').value = "";
       }
     };
     document.getElementById('fileInput').onchange = function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+      const file = e.target.files[0]; if (!file) return;
       if (file.size > 4*1024*1024) { alert("File too large (max 4MB)"); this.value = ""; return; }
       attachedFileName = file.name;
       document.getElementById('fileName').innerText = file.name;
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        attachedFile = evt.target.result;
-      }
+      reader.onload = function(evt) { attachedFile = evt.target.result; }
       reader.readAsDataURL(file);
     };
     function downloadLocalFile(fileName) {
       let key = 'userFile_'+fileName;
       let dataUrl = localStorage.getItem(key);
       if (!dataUrl) { alert("File not found in your browser."); return; }
-      let a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
+      let a = document.createElement('a'); a.href = dataUrl; a.download = fileName; document.body.appendChild(a); a.click();
       setTimeout(()=>document.body.removeChild(a),100);
     }
 
@@ -405,10 +488,8 @@
     document.getElementById('postForm').onsubmit = function(e) {
       e.preventDefault();
       const user = getCurrentUser();
-      if (!user) {
-        alert("You must be logged in to post.");
-        return;
-      }
+      if (!user) { alert("You must be logged in to post."); return; }
+      if (isBanned(user)) { alert("You are banned!"); return; }
       const title = document.getElementById('title').value.trim();
       const content = document.getElementById('content').value.trim();
       const type = document.getElementById('post-type').value;
@@ -416,46 +497,163 @@
       const posts = getPosts();
       let postObj = {
         id: 'p' + Date.now() + Math.floor(Math.random()*99999),
-        title,
-        content,
-        user,
-        type,
-        channel: currentChannel,
-        time: new Date().toLocaleString(),
-        replies: []
+        title, content, user, type, channel: currentChannel, time: new Date().toLocaleString(), replies: []
       };
       if (type === 'localfile') {
         if (!attachedFile || !attachedFileName) { alert("Attach a file first!"); return; }
-        // File saved only for this user
         localStorage.setItem('userFile_'+attachedFileName, attachedFile);
         postObj.localFileName = attachedFileName;
       }
       posts.unshift(postObj);
       savePosts(posts);
-      document.getElementById('title').value = "";
-      document.getElementById('content').value = "";
+      document.getElementById('title').value = ""; document.getElementById('content').value = "";
       if (type === 'localfile') {
-        attachedFile = null; attachedFileName = "";
-        document.getElementById('fileName').innerText = "";
-        document.getElementById('fileInput').value = "";
-        document.getElementById('fileSection').style.display = 'none';
-        document.getElementById('post-type').value = 'text';
+        attachedFile = null; attachedFileName = ""; document.getElementById('fileName').innerText = "";
+        document.getElementById('fileInput').value = ""; document.getElementById('fileSection').style.display = 'none'; document.getElementById('post-type').value = 'text';
       }
       renderPosts();
     }
+
+    // --------- Reports ---------
+    function getReports() { return JSON.parse(localStorage.getItem('forumReports')||'[]'); }
+    function saveReports(arr) { localStorage.setItem('forumReports',JSON.stringify(arr)); }
+    function reportPost(postId) {
+      let user = getCurrentUser();
+      if (!user) { alert("Log in to report."); return; }
+      let reason = prompt("Reason for report?");
+      if (!reason) return;
+      let arr = getReports();
+      arr.push({type:"post", postId, by:user, reason, time:Date.now()});
+      saveReports(arr);
+      alert("Reported!");
+      renderReportsPanel();
+    }
+    function reportReply(postId, replyIdx) {
+      let user = getCurrentUser();
+      if (!user) { alert("Log in to report."); return; }
+      let reason = prompt("Reason for report?");
+      if (!reason) return;
+      let arr = getReports();
+      arr.push({type:"reply", postId, replyIdx, by:user, reason, time:Date.now()});
+      saveReports(arr);
+      alert("Reported!");
+      renderReportsPanel();
+    }
+    function renderReportsPanel() {
+      let user = getCurrentUser();
+      let arr = getReports();
+      let panel = document.getElementById('reportsPanel');
+      if (!isAdmin() || !user) { panel.classList.add("hidden"); return; }
+      let posts = getPosts();
+      let html = `<b>Reports (${arr.length})</b><br>`;
+      arr.forEach((r,i) => {
+        if (r.type==="post") {
+          let p = posts.find(p=>p.id===r.postId); if (!p) return;
+          html += `[POST] <b>${p.title}</b> by ${p.user}<br>Reported by ${r.by}: <i>${escapeHtml(r.reason)}</i>
+          <button onclick="deletePost('${r.postId}')">Delete post</button>
+          <button onclick="banUser('${p.user}')">Ban user</button>
+          <button onclick="dismissReport(${i})">Dismiss</button><br>`;
+        } else if (r.type==="reply") {
+          let p = posts.find(p=>p.id===r.postId); if (!p) return;
+          let reply = p.replies[r.replyIdx]; if (!reply) return;
+          html += `[REPLY] in <b>${p.title}</b> by ${reply.user}<br>Reported by ${r.by}: <i>${escapeHtml(r.reason)}</i>
+          <button onclick="deleteReply('${p.id}',${r.replyIdx})">Delete reply</button>
+          <button onclick="banUser('${reply.user}')">Ban user</button>
+          <button onclick="dismissReport(${i})">Dismiss</button><br>`;
+        }
+      });
+      panel.innerHTML = html;
+      panel.classList.remove("hidden");
+    }
+    function dismissReport(idx) {
+      let arr = getReports();
+      arr.splice(idx,1);
+      saveReports(arr);
+      renderReportsPanel();
+    }
+
+    // --------- Admin Panel ---------
+    function renderAdminPanel() {
+      let user = getCurrentUser();
+      let panel = document.getElementById('adminPanel');
+      if (!isAdmin() || !user) { panel.classList.add("hidden"); return; }
+      let users = getUsers();
+      let html = `<b>Admin Panel</b><br>Total users: ${Object.keys(users).length}<br>`;
+      let bans = getBans();
+      html += `Banned users:<br>`;
+      Object.keys(bans).forEach(u=>{
+        if (bans[u] && Date.now() < bans[u])
+          html += `${u}: banned until ${new Date(bans[u]).toLocaleString()}<br>`;
+      });
+      panel.innerHTML = html;
+      panel.classList.remove("hidden");
+    }
+
+    // --------- Yksityisviestit ---------
+    function getPMs() {
+      return JSON.parse(localStorage.getItem('forumPMs')||'{}');
+    }
+    function savePMs(obj) {
+      localStorage.setItem('forumPMs', JSON.stringify(obj));
+    }
+    function showPMPanel(toUser) {
+      let user = getCurrentUser();
+      if (!user || !toUser) return;
+      let pmDiv = document.getElementById('pmPanel');
+      pmDiv.innerHTML = `<h4>Private messages with ${toUser}</h4>
+        <div id="pmMessages" style="background:#f8f8f8;max-height:220px;overflow-y:auto;padding:8px;margin-bottom:8px;border-radius:8px;"></div>
+        <form onsubmit="sendPM(event,'${toUser}')">
+          <input type="text" id="pmInput" placeholder="Type message..." required style="width:80%;">
+          <button type="submit">Send</button>
+          <button type="button" onclick="hidePMPanel()" style="margin-left:6px;">Close</button>
+        </form>
+      `;
+      pmDiv.classList.remove("hidden");
+      renderPMs(toUser);
+    }
+    function hidePMPanel() {
+      document.getElementById('pmPanel').classList.add("hidden");
+    }
+    function renderPMs(withUser) {
+      let user = getCurrentUser(); if (!user) return;
+      let obj = getPMs();
+      let msgs = (obj[user+"||"+withUser]||[]).concat(obj[withUser+"||"+user]||[]);
+      msgs.sort((a,b)=>a.time-b.time);
+      let html = "";
+      msgs.forEach(m=>{
+        html += `<div style="margin-bottom:4px;"><b>${m.from}:</b> ${escapeHtml(m.text)} <span style="color:#888;font-size:0.85em;">${new Date(m.time).toLocaleString()}</span></div>`;
+      });
+      document.getElementById('pmMessages').innerHTML = html || "<i>No messages yet.</i>";
+    }
+    function sendPM(e, toUser) {
+      e.preventDefault();
+      let user = getCurrentUser();
+      let txt = document.getElementById('pmInput').value.trim();
+      if (!txt) return;
+      let obj = getPMs();
+      let key = user+"||"+toUser;
+      obj[key] = obj[key]||[];
+      obj[key].push({from:user, to:toUser, text:txt, time:Date.now()});
+      savePMs(obj);
+      document.getElementById('pmInput').value = "";
+      renderPMs(toUser);
+    }
+
+    // --------- Util ---------
+    function escapeHtml(s) { return (s||"").replace(/[<>"'&]/g, c=>({ '<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;' }[c])); }
 
     // --------- Initial load ---------
     function loadPosts() {
-      if (getCurrentUser()) {
-        document.getElementById('mainContent').style.display = '';
-      } else {
-        document.getElementById('mainContent').style.display = 'none';
-      }
+      if (getCurrentUser()) { document.getElementById('mainContent').style.display = ''; }
+      else { document.getElementById('mainContent').style.display = 'none'; }
       renderPosts();
     }
-
+    renderProfileBox();
+    renderChannels();
     renderAuthForms();
     loadPosts();
+    renderAdminPanel();
+    renderReportsPanel();
   </script>
 </body>
 </html>
