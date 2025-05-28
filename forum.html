@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Forum</title>
+  <title>Multi-section Forum</title>
   <style>
-    body { font-family: Arial; background: #f0f0f0; margin: 0; padding: 2em; }
-    #forum { background: #fff; padding: 2em; max-width: 700px; margin: auto; border-radius: 10px; }
+    body { font-family: Arial; background: #f0f0f0; margin: 0; }
+    #container { display: flex; max-width: 1000px; margin: 30px auto; background: #fff; border-radius: 10px; min-height: 600px; }
+    #sidebar { width: 180px; background: #eee; border-radius: 10px 0 0 10px; padding: 24px 12px 12px 12px; }
+    #sidebar h3 { margin-top: 0; }
+    .channel { margin-bottom: 12px; cursor: pointer; padding: 6px 12px; border-radius: 5px; }
+    .channel.selected { background: #d2e6fa; font-weight: bold; }
+    #forum { flex: 1; padding: 24px 32px; }
     .post { border-bottom: 1px solid #eee; margin-bottom: 1em; padding-bottom: 1em; }
     .post:last-child { border-bottom: none; }
     .post-title { font-weight: bold; font-size: 1.1em; }
@@ -19,25 +24,54 @@
     #loginForm, #signupForm { margin-bottom: 1.2em; }
     #back-link { display: inline-block; margin-bottom: 18px; text-decoration: none; color: #3366bb; }
     #back-link:hover { text-decoration: underline; }
+    #post-type { margin-bottom: 5px; }
+    .media-thumb { max-width: 320px; max-height: 180px; display: block; margin: 8px 0; border-radius: 4px; }
+    .audio-thumb { margin-top: 10px; }
   </style>
 </head>
 <body>
-  <div id="forum">
-    <a href="index.html" id="back-link">&larr; Back to front page</a>
-    <button class="logout-btn" onclick="logout()" style="display:none;" id="logoutBtn">Log out (<span id="currentUser"></span>)</button>
-    <div id="authForms"></div>
-
-    <div id="mainContent" style="display:none;">
-      <form id="postForm">
-        <input type="text" id="title" placeholder="Title" required style="width:100%;margin-bottom:5px;">
-        <textarea id="content" placeholder="Write your message..." required style="width:100%;height:60px;"></textarea>
-        <button type="submit">Post</button>
-      </form>
-      <h3>Posts</h3>
-      <div id="posts"></div>
+  <div id="container">
+    <div id="sidebar">
+      <h3>Channels</h3>
+      <div class="channel selected" onclick="selectChannel('General')" id="ch-General">General</div>
+      <div class="channel" onclick="selectChannel('Videos')" id="ch-Videos">Videos</div>
+      <div class="channel" onclick="selectChannel('Music')" id="ch-Music">Music</div>
+      <div class="channel" onclick="selectChannel('MIDI')" id="ch-MIDI">MIDI</div>
+    </div>
+    <div id="forum">
+      <a href="index.html" id="back-link">&larr; Back to front page</a>
+      <button class="logout-btn" onclick="logout()" style="display:none;" id="logoutBtn">Log out (<span id="currentUser"></span>)</button>
+      <div id="authForms"></div>
+      <div id="mainContent" style="display:none;">
+        <form id="postForm">
+          <input type="text" id="title" placeholder="Title" required style="width:100%;margin-bottom:5px;">
+          <select id="post-type" required>
+            <option value="text">Text</option>
+            <option value="youtube">YouTube video</option>
+            <option value="audio">Audio/MP3/WAV link</option>
+            <option value="midi">MIDI file link</option>
+            <option value="link">Other link</option>
+          </select>
+          <textarea id="content" placeholder="Write your message or paste a link..." required style="width:100%;height:60px;"></textarea>
+          <button type="submit">Post</button>
+        </form>
+        <h3 id="channel-title">General</h3>
+        <div id="posts"></div>
+      </div>
     </div>
   </div>
   <script>
+    // --------- Channels ---------
+    let currentChannel = 'General';
+    function selectChannel(name) {
+      currentChannel = name;
+      for (const ch of ['General','Videos','Music','MIDI']) {
+        document.getElementById('ch-'+ch).className = 'channel' + (ch === name ? ' selected' : '');
+      }
+      document.getElementById('channel-title').textContent = name;
+      renderPosts();
+    }
+
     // --------- User Auth ---------
     function getUsers() {
       return JSON.parse(localStorage.getItem('forumUsers') || '{}');
@@ -136,26 +170,25 @@
 
     // --------- Posts ---------
     function getPosts() {
-      return JSON.parse(localStorage.getItem('forumPostsV2') || "[]");
+      return JSON.parse(localStorage.getItem('forumPostsV3') || "[]");
     }
     function savePosts(posts) {
-      localStorage.setItem('forumPostsV2', JSON.stringify(posts));
+      localStorage.setItem('forumPostsV3', JSON.stringify(posts));
     }
-    // Like handling (per user, per post)
     function getLikes() {
-      return JSON.parse(localStorage.getItem('forumLikes') || '{}');
+      return JSON.parse(localStorage.getItem('forumLikesV3') || '{}');
     }
     function saveLikes(likes) {
-      localStorage.setItem('forumLikes', JSON.stringify(likes));
+      localStorage.setItem('forumLikesV3', JSON.stringify(likes));
     }
-    // Replies: replies are stored in post.replies (array)
     function renderPosts() {
       const posts = getPosts();
       const likes = getLikes();
       const postsDiv = document.getElementById('posts');
       const user = getCurrentUser();
+      const channel = currentChannel;
       postsDiv.innerHTML = "";
-      posts.forEach((p, idx) => {
+      posts.filter(p => p.channel === channel).forEach((p, idx) => {
         const el = document.createElement('div');
         el.className = "post";
         let likeCount = (likes[p.id] && likes[p.id].length) ? likes[p.id].length : 0;
@@ -163,7 +196,7 @@
         el.innerHTML = `
           <div class="post-title">${p.title}</div>
           <div class="post-time">${p.time} <span class="post-user">by ${p.user}</span></div>
-          <div>${p.content}</div>
+          <div>${renderPostContent(p)}</div>
           <div class="actions">
             <button class="like-btn${liked ? ' liked' : ''}" onclick="likePost('${p.id}')">
               👍 Like (<span id="like-count-${p.id}">${likeCount}</span>)
@@ -184,12 +217,38 @@
         postsDiv.appendChild(el);
       });
     }
+    function renderPostContent(p) {
+      if (p.type === 'youtube') {
+        // Try to extract YouTube video ID from link or plain text
+        let url = p.content.trim();
+        let idMatch = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        let id = idMatch ? idMatch[1] : null;
+        if (id) {
+          return `<iframe width="320" height="180" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen class="media-thumb"></iframe>`;
+        }
+        return `<a href="${url}" target="_blank">${url}</a>`;
+      }
+      if (p.type === 'audio') {
+        // Audio/MP3/WAV link
+        return `<audio controls src="${p.content.trim()}" class="audio-thumb"></audio>
+          <div><a href="${p.content.trim()}" target="_blank">[Open audio]</a></div>`;
+      }
+      if (p.type === 'midi') {
+        // MIDI file link
+        return `<div><a href="${p.content.trim()}" target="_blank">🎹 Listen/download MIDI</a></div>`;
+      }
+      if (p.type === 'link') {
+        return `<a href="${p.content.trim()}" target="_blank">${p.content.trim()}</a>`;
+      }
+      // Default: text
+      return p.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+    }
     function renderReplies(replies, postId) {
       if (!replies || !replies.length) return "";
       return replies.map(r => `
         <div class="reply">
           <div class="post-time">${r.time} <span class="post-user">by ${r.user}</span></div>
-          <div>${r.content}</div>
+          <div>${r.content.replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>")}</div>
         </div>
       `).join('');
     }
@@ -231,8 +290,8 @@
       if (postIdx === -1) return;
       posts[postIdx].replies = posts[postIdx].replies || [];
       posts[postIdx].replies.push({
-        content,
-        user,
+        content: content,
+        user: user,
         time: new Date().toLocaleString()
       });
       savePosts(posts);
@@ -250,6 +309,7 @@
       }
       const title = document.getElementById('title').value.trim();
       const content = document.getElementById('content').value.trim();
+      const type = document.getElementById('post-type').value;
       if (!title || !content) return;
       const posts = getPosts();
       posts.unshift({
@@ -257,6 +317,8 @@
         title,
         content,
         user,
+        type,
+        channel: currentChannel,
         time: new Date().toLocaleString(),
         replies: []
       });
