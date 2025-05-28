@@ -2,16 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Advanced Forum demo</title>
+  <title>JSLAV Forum</title>
   <style>
-    body { font-family: Arial; background: #f0f0f0; margin: 0; }
-    #container { display: flex; max-width: 1100px; margin: 30px auto; background: #fff; border-radius: 10px; min-height: 700px; box-shadow: 0 2px 16px #bbb5; }
-    #sidebar { width: 220px; background: #eee; border-radius: 10px 0 0 10px; padding: 24px 12px 12px 12px; }
-    #sidebar h3 { margin-top: 0; }
-    .channel { margin-bottom: 12px; cursor: pointer; padding: 6px 12px; border-radius: 5px; }
-    .channel.selected { background: #d2e6fa; font-weight: bold; }
-    .channel.user { background: #eafbe3; }
-    #forum { flex: 1; padding: 24px 32px; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: radial-gradient(circle at 50% 120px, #e2ebff 0%, #b8c8e6 100%);
+      margin: 0;
+    }
+    #header {
+      width: 100%;
+      background: #284d85;
+      padding: 16px 0 12px 0;
+      text-align: center;
+      box-shadow: 0 2px 24px #2d4e9033;
+      color: #fff;
+      font-size: 2em;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+    #container {
+      display: flex;
+      max-width: 1100px;
+      margin: 36px auto;
+      background: #ffffffee;
+      border-radius: 18px;
+      min-height: 700px;
+      box-shadow: 0 4px 32px #1d2b4a22;
+      border: 2.5px solid #2d4e90;
+    }
+    #sidebar {
+      width: 250px;
+      background: #dae8ff;
+      border-radius: 18px 0 0 18px;
+      padding: 26px 14px 14px 14px;
+      border-right: 2px solid #b2bedc;
+      box-shadow: 2px 0 8px #a8b6e055;
+    }
+    #sidebar h3 {
+      margin-top: 0;
+      font-size: 1.2em;
+      color: #284d85;
+      letter-spacing: 1px;
+    }
+    .channel {
+      display: flex;
+      align-items: center;
+      margin-bottom: 13px;
+      cursor: pointer;
+      padding: 7px 12px;
+      border-radius: 8px;
+      background: #f8faff;
+      transition: background 0.15s;
+      font-weight: 500;
+    }
+    .channel.selected {
+      background: #a7c6f8;
+      color: #223c64;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #aac5f366;
+    }
+    .channel .ch-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+      border: 1.5px solid #4363aa;
+      background: #fff;
+    }
+    #forum {
+      flex: 1;
+      padding: 34px 38px;
+    }
+    button, input[type="submit"] {
+      border: none;
+      background: #3666b7;
+      color: #fff;
+      font-weight: 500;
+      border-radius: 6px;
+      padding: 6px 16px;
+      font-size: 1em;
+      box-shadow: 0 2px 6px #a2bceb33;
+      transition: background 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    button:hover, input[type="submit"]:hover {
+      background: #274c84;
+      box-shadow: 0 4px 16px #b1c8e633;
+    }
+    input, textarea, select {
+      background: #f6f8fc;
+      border: 1.5px solid #b2bedc;
+      border-radius: 5px;
+      padding: 7px 10px;
+      font-size: 1em;
+      margin-bottom: 5px;
+    }
+    .profile-section {
+      background: #f0f4ff;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+      text-align: center;
+      border: 1.5px solid #aac5f3;
+    }
+    .profile-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      background: #cdd4e0;
+      object-fit: cover;
+      border: 2px solid #4363aa;
+    }
+    .admin-badge {
+      background: #284d85;
+      color: #fff;
+      font-size:0.85em;
+      border-radius:4px;
+      padding: 2px 6px;
+      margin-left:5px;
+    }
+    #mainContent {
+      background: #f9fbff;
+      border-radius: 10px;
+      padding: 20px 22px 26px 22px;
+      box-shadow: 0 2px 16px #b5c9e055;
+      border: 1.5px solid #b2bedc;
+    }
     .post { border-bottom: 1px solid #eee; margin-bottom: 1.2em; padding-bottom: 1.1em; }
     .post:last-child { border-bottom: none; }
     .post-title { font-weight: bold; font-size: 1.1em; }
@@ -33,9 +150,6 @@
     .audio-thumb { margin-top: 10px; }
     #fileInput { margin-top: 4px; }
     .file-section { margin-top:8px; font-size:0.96em; }
-    .profile-img { width: 56px; height: 56px; border-radius: 8px; background: #ccc; object-fit: cover; }
-    .profile-section { background: #f8f8f8; border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: center; }
-    .admin-badge { background: #3366bb; color: #fff; font-size:0.85em; border-radius:4px; padding: 2px 6px; margin-left:5px; }
     .pm-btn { background: #d2e6fa; color: #174317; }
     #createChannelForm { margin-bottom: 10px; }
     .banned { color: #888; font-style: italic; }
@@ -45,13 +159,17 @@
   </style>
 </head>
 <body>
+  <div id="header">
+    <span style="vertical-align:middle;">JSLAV Forum</span>
+  </div>
   <div id="container">
     <div id="sidebar">
       <div id="profileBox"></div>
       <button onclick="editProfile()">Edit profile</button>
       <h3>Channels</h3>
       <form id="createChannelForm" onsubmit="createChannel(event)">
-        <input type="text" id="newChannelName" placeholder="New channel..." required maxlength="20" style="width:90%;">
+        <input type="text" id="newChannelName" placeholder="New channel..." required maxlength="20" style="width:60%;">
+        <input type="file" id="newChannelImg" accept="image/*" style="width:35%;">
         <button type="submit">Add</button>
       </form>
       <div id="channelList"></div>
@@ -90,134 +208,13 @@
     </div>
   </div>
   <script>
-// --------- Admin config ---------
-// HUOM! Nyt vain JSLAV on admin. Lisää muita tähän jos haluat useampia ylläpitäjiä.
-function isAdmin() {
-  return getCurrentUser() === "JSLAV";
-}
-function isAdminUser(username) {
-  return username === "JSLAV";
-}
-
-// --------- Moderaattorit (modit) ---------
-let MOD_USERS = JSON.parse(localStorage.getItem("forumMods") || '[]');
-function isMod(username) {
-  return MOD_USERS.includes(username);
-}
-function toggleMod(username) {
-  if (isAdmin()) {
-    if (isMod(username)) {
-      MOD_USERS = MOD_USERS.filter(u => u !== username);
-    } else {
-      MOD_USERS.push(username);
+    // --------- Kanavakuvien tallennus ja haku ---------
+    function getChannelImages() {
+      return JSON.parse(localStorage.getItem('forumChannelImgs') || '{}');
     }
-    localStorage.setItem("forumMods", JSON.stringify(MOD_USERS));
-    renderAdminPanel();
-    renderUserListPanel();
-  }
-}
-
-// --------- Bannit ---------
-function getBans() {
-  return JSON.parse(localStorage.getItem('forumBans') || '{}');
-}
-function setBan(username, until) {
-  let bans = getBans();
-  bans[username] = until;
-  localStorage.setItem('forumBans', JSON.stringify(bans));
-}
-function isBanned(username) {
-  let bans = getBans();
-  if (!bans[username]) return false;
-  if (Date.now() > bans[username]) { setBan(username, null); return false; }
-  return bans[username];
-}
-
-// --------- Profiiliboksiin admin/mod-merkinnät & viesti-ilmoitus ---------
-function renderProfileBox() {
-  let user = getCurrentUser();
-  let html = "";
-  if (user) {
-    let p = getProfile(user);
-    html += `<div class="profile-section">
-      <img src="${p.img||'https://ui-avatars.com/api/?name='+encodeURIComponent(user)+'&size=96'}" class="profile-img"><br>
-      <b>${user}</b>${isAdmin() ? ' <span class="admin-badge">admin</span>' : isMod(user) ? ' <span class="admin-badge" style="background:#a8c;">mod</span>' : ''}
-      <br><small>${p.desc?escapeHtml(p.desc):""}</small>
-      ${isAdmin() ? '<div style="color:#3366bb;">(Sinä olet ylläpitäjä)</div>' : ''}
-      </div>
-      ${renderNewMessageNotice()}
-      `;
-  } else {
-    html = `<div style="margin-bottom:12px;color:#888;">Not logged in</div>`;
-  }
-  document.getElementById("profileBox").innerHTML = html;
-}
-
-// --------- Yksityisviesti-ilmoitus ---------
-function renderNewMessageNotice() {
-  const user = getCurrentUser();
-  if (!user) return "";
-  const pms = getPMs();
-  let unread = 0;
-  Object.values(pms).forEach(msgArr => {
-    msgArr.forEach(m => {
-      if (m.to === user && !m.read) unread++;
-    });
-  });
-  if (unread > 0) {
-    return `<div style="color:#c00;font-size:1.1em;margin:8px 0;">Sinulle on uusia viestejä! (${unread})</div>`;
-  }
-  return "";
-}
-
-// --------- Kun käyttäjä avaa PM-paneelin, merkitään viestit luetuksi ---------
-function renderPMs(withUser) {
-  let user = getCurrentUser(); if (!user) return;
-  let obj = getPMs();
-  let msgs = (obj[user+"||"+withUser]||[]).concat(obj[withUser+"||"+user]||[]);
-  msgs.sort((a,b)=>a.time-b.time);
-  let html = "";
-  let changed = false;
-  msgs.forEach(m=>{
-    if (m.to === user && !m.read) { m.read = true; changed = true; }
-    html += `<div style="margin-bottom:4px;"><b>${m.from}:</b> ${escapeHtml(m.text)} <span style="color:#888;font-size:0.85em;">${new Date(m.time).toLocaleString()}</span></div>`;
-  });
-  if (changed) { savePMs(obj); renderProfileBox(); }
-  document.getElementById('pmMessages').innerHTML = html || "<i>No messages yet.</i>";
-}
-
-// --------- Admin Panel: käyttäjälista ja moderaattorin lisäys/poisto ---------
-function renderUserListPanel() {
-  if (!isAdmin()) return;
-  const users = Object.keys(getUsers()).filter(u=>u!=="JSLAV");
-  let html = "<h4>Käyttäjät</h4>";
-  users.forEach(u => {
-    html += `<div>${u} 
-      <button onclick="toggleMod('${u}')">${isMod(u) ? 'Poista moderaattori' : 'Lisää moderaattoriksi'}</button>
-      ${isMod(u)?' <span class="admin-badge" style="background:#a8c;">mod</span>':''}
-      </div>`;
-  });
-  document.getElementById("userListPanel").innerHTML = html;
-}
-
-// --------- Admin-panelissa käyttäjälistan näyttö ---------
-function renderAdminPanel() {
-  let user = getCurrentUser();
-  let panel = document.getElementById('adminPanel');
-  if (!isAdmin() || !user) { panel.classList.add("hidden"); return; }
-  let users = getUsers();
-  let html = `<b>Admin Panel</b><br>Total users: ${Object.keys(users).length}<br>`;
-  let bans = getBans();
-  html += `Banned users:<br>`;
-  Object.keys(bans).forEach(u=>{
-    if (bans[u] && Date.now() < bans[u])
-      html += `${u}: banned until ${new Date(bans[u]).toLocaleString()}<br>`;
-  });
-  html += `<div id="userListPanel"></div>`;
-  panel.innerHTML = html;
-  panel.classList.remove("hidden");
-  renderUserListPanel();
-}
+    function saveChannelImages(obj) {
+      localStorage.setItem('forumChannelImgs', JSON.stringify(obj));
+    }
 
     // --------- Channels ---------
     function getChannels() {
@@ -229,9 +226,12 @@ function renderAdminPanel() {
     let currentChannel = 'General';
     function renderChannels() {
       let chs = getChannels();
+      let imgs = getChannelImages();
       let html = "";
       chs.forEach(ch => {
-        html += `<div class="channel${currentChannel===ch?' selected':''}${isUserChannel(ch)?' user':''}" onclick="selectChannel('${ch.replace(/'/g,"\\'")}')" id="ch-${ch.replace(/\s+/g,'_')}">${ch}</div>`;
+        let imgSrc = imgs[ch] || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(ch) + '&background=4363aa&color=fff';
+        html += `<div class="channel${currentChannel===ch?' selected':''}${isUserChannel(ch)?' user':''}" onclick="selectChannel('${ch.replace(/'/g,"\\'")}')" id="ch-${ch.replace(/\s+/g,'_')}">
+          <img src="${imgSrc}" class="ch-img" alt="ch-img"> ${ch}</div>`;
       });
       document.getElementById('channelList').innerHTML = html;
     }
@@ -251,8 +251,141 @@ function renderAdminPanel() {
       let chs = getChannels();
       chs.push(name);
       saveChannels(chs);
+
+      // Tallenna profiilikuva, jos valittu
+      let imgInput = document.getElementById('newChannelImg');
+      if (imgInput.files && imgInput.files[0]) {
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+          let imgs = getChannelImages();
+          imgs[name] = evt.target.result;
+          saveChannelImages(imgs);
+          renderChannels();
+        };
+        reader.readAsDataURL(imgInput.files[0]);
+      } else {
+        renderChannels();
+      }
       document.getElementById('newChannelName').value = "";
-      renderChannels();
+      imgInput.value = "";
+    }
+
+    // --------- Admin config ---------
+    function isAdmin() { return getCurrentUser() === "JSLAV"; }
+    function isAdminUser(username) { return username === "JSLAV"; }
+    let MOD_USERS = JSON.parse(localStorage.getItem("forumMods") || '[]');
+    function isMod(username) { return MOD_USERS.includes(username); }
+    function toggleMod(username) {
+      if (isAdmin()) {
+        if (isMod(username)) {
+          MOD_USERS = MOD_USERS.filter(u => u !== username);
+        } else {
+          MOD_USERS.push(username);
+        }
+        localStorage.setItem("forumMods", JSON.stringify(MOD_USERS));
+        renderAdminPanel();
+        renderUserListPanel();
+      }
+    }
+    function getBans() {
+      return JSON.parse(localStorage.getItem('forumBans') || '{}');
+    }
+    function setBan(username, until) {
+      let bans = getBans();
+      bans[username] = until;
+      localStorage.setItem('forumBans', JSON.stringify(bans));
+    }
+    function isBanned(username) {
+      let bans = getBans();
+      if (!bans[username]) return false;
+      if (Date.now() > bans[username]) { setBan(username, null); return false; }
+      return bans[username];
+    }
+
+    // --------- Profiiliboksiin admin/mod-merkinnät & viesti-ilmoitus ---------
+    function renderProfileBox() {
+      let user = getCurrentUser();
+      let html = "";
+      if (user) {
+        let p = getProfile(user);
+        html += `<div class="profile-section">
+          <img src="${p.img||'https://ui-avatars.com/api/?name='+encodeURIComponent(user)+'&size=96'}" class="profile-img"><br>
+          <b>${user}</b>${isAdmin() ? ' <span class="admin-badge">admin</span>' : isMod(user) ? ' <span class="admin-badge" style="background:#a8c;">mod</span>' : ''}
+          <br><small>${p.desc?escapeHtml(p.desc):""}</small>
+          ${isAdmin() ? '<div style="color:#3366bb;">(Sinä olet ylläpitäjä)</div>' : ''}
+          </div>
+          ${renderNewMessageNotice()}
+          `;
+      } else {
+        html = `<div style="margin-bottom:12px;color:#888;">Not logged in</div>`;
+      }
+      document.getElementById("profileBox").innerHTML = html;
+    }
+
+    // --------- Yksityisviesti-ilmoitus ---------
+    function renderNewMessageNotice() {
+      const user = getCurrentUser();
+      if (!user) return "";
+      const pms = getPMs();
+      let unread = 0;
+      Object.values(pms).forEach(msgArr => {
+        msgArr.forEach(m => {
+          if (m.to === user && !m.read) unread++;
+        });
+      });
+      if (unread > 0) {
+        return `<div style="color:#c00;font-size:1.1em;margin:8px 0;">Sinulle on uusia viestejä! (${unread})</div>`;
+      }
+      return "";
+    }
+
+    // --------- Kun käyttäjä avaa PM-paneelin, merkitään viestit luetuksi ---------
+    function renderPMs(withUser) {
+      let user = getCurrentUser(); if (!user) return;
+      let obj = getPMs();
+      let msgs = (obj[user+"||"+withUser]||[]).concat(obj[withUser+"||"+user]||[]);
+      msgs.sort((a,b)=>a.time-b.time);
+      let html = "";
+      let changed = false;
+      msgs.forEach(m=>{
+        if (m.to === user && !m.read) { m.read = true; changed = true; }
+        html += `<div style="margin-bottom:4px;"><b>${m.from}:</b> ${escapeHtml(m.text)} <span style="color:#888;font-size:0.85em;">${new Date(m.time).toLocaleString()}</span></div>`;
+      });
+      if (changed) { savePMs(obj); renderProfileBox(); }
+      document.getElementById('pmMessages').innerHTML = html || "<i>No messages yet.</i>";
+    }
+
+    // --------- Admin Panel: käyttäjälista ja moderaattorin lisäys/poisto ---------
+    function renderUserListPanel() {
+      if (!isAdmin()) return;
+      const users = Object.keys(getUsers()).filter(u=>u!=="JSLAV");
+      let html = "<h4>Käyttäjät</h4>";
+      users.forEach(u => {
+        html += `<div>${u} 
+          <button onclick="toggleMod('${u}')">${isMod(u) ? 'Poista moderaattori' : 'Lisää moderaattoriksi'}</button>
+          ${isMod(u)?' <span class="admin-badge" style="background:#a8c;">mod</span>':''}
+          </div>`;
+      });
+      document.getElementById("userListPanel").innerHTML = html;
+    }
+
+    // --------- Admin-panelissa käyttäjälistan näyttö ---------
+    function renderAdminPanel() {
+      let user = getCurrentUser();
+      let panel = document.getElementById('adminPanel');
+      if (!isAdmin() || !user) { panel.classList.add("hidden"); return; }
+      let users = getUsers();
+      let html = `<b>Admin Panel</b><br>Total users: ${Object.keys(users).length}<br>`;
+      let bans = getBans();
+      html += `Banned users:<br>`;
+      Object.keys(bans).forEach(u=>{
+        if (bans[u] && Date.now() < bans[u])
+          html += `${u}: banned until ${new Date(bans[u]).toLocaleString()}<br>`;
+      });
+      html += `<div id="userListPanel"></div>`;
+      panel.innerHTML = html;
+      panel.classList.remove("hidden");
+      renderUserListPanel();
     }
 
     // --------- User Auth, Profiles ---------
@@ -269,21 +402,6 @@ function renderAdminPanel() {
       users[username] = users[username] || {};
       users[username].profile = profile;
       saveUsers(users);
-    }
-    function renderProfileBox() {
-      let user = getCurrentUser();
-      let html = "";
-      if (user) {
-        let p = getProfile(user);
-        html += `<div class="profile-section">
-        <img src="${p.img||'https://ui-avatars.com/api/?name='+encodeURIComponent(user)+'&size=96'}" class="profile-img"><br>
-        <b>${user}</b><br>
-        <small>${p.desc?escapeHtml(p.desc):""}</small>
-        </div>`;
-      } else {
-        html = `<div style="margin-bottom:12px;color:#888;">Not logged in</div>`;
-      }
-      document.getElementById("profileBox").innerHTML = html;
     }
     function editProfile() {
       let user = getCurrentUser(); if (!user) return;
@@ -680,23 +798,6 @@ function renderAdminPanel() {
       renderReportsPanel();
     }
 
-    // --------- Admin Panel ---------
-    function renderAdminPanel() {
-      let user = getCurrentUser();
-      let panel = document.getElementById('adminPanel');
-      if (!isAdmin() || !user) { panel.classList.add("hidden"); return; }
-      let users = getUsers();
-      let html = `<b>Admin Panel</b><br>Total users: ${Object.keys(users).length}<br>`;
-      let bans = getBans();
-      html += `Banned users:<br>`;
-      Object.keys(bans).forEach(u=>{
-        if (bans[u] && Date.now() < bans[u])
-          html += `${u}: banned until ${new Date(bans[u]).toLocaleString()}<br>`;
-      });
-      panel.innerHTML = html;
-      panel.classList.remove("hidden");
-    }
-
     // --------- Yksityisviestit ---------
     function getPMs() {
       return JSON.parse(localStorage.getItem('forumPMs')||'{}');
@@ -721,17 +822,6 @@ function renderAdminPanel() {
     }
     function hidePMPanel() {
       document.getElementById('pmPanel').classList.add("hidden");
-    }
-    function renderPMs(withUser) {
-      let user = getCurrentUser(); if (!user) return;
-      let obj = getPMs();
-      let msgs = (obj[user+"||"+withUser]||[]).concat(obj[withUser+"||"+user]||[]);
-      msgs.sort((a,b)=>a.time-b.time);
-      let html = "";
-      msgs.forEach(m=>{
-        html += `<div style="margin-bottom:4px;"><b>${m.from}:</b> ${escapeHtml(m.text)} <span style="color:#888;font-size:0.85em;">${new Date(m.time).toLocaleString()}</span></div>`;
-      });
-      document.getElementById('pmMessages').innerHTML = html || "<i>No messages yet.</i>";
     }
     function sendPM(e, toUser) {
       e.preventDefault();
