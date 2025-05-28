@@ -5,56 +5,278 @@
   <title>Simple Forum</title>
   <style>
     body { font-family: Arial; background: #f0f0f0; margin: 0; padding: 2em; }
-    #forum { background: #fff; padding: 2em; max-width: 600px; margin: auto; border-radius: 10px; }
+    #forum { background: #fff; padding: 2em; max-width: 700px; margin: auto; border-radius: 10px; }
     .post { border-bottom: 1px solid #eee; margin-bottom: 1em; padding-bottom: 1em; }
     .post:last-child { border-bottom: none; }
     .post-title { font-weight: bold; font-size: 1.1em; }
     .post-time { color: #666; font-size: 0.9em; }
+    .post-user { color: #3366bb; font-size: 0.95em; }
+    .reply { margin-left: 24px; border-left: 2px solid #eee; padding-left: 12px; margin-top: 8px; background: #fafafa; border-radius: 4px; }
+    .actions { margin-top: 6px; }
+    .like-btn, .reply-btn { border: none; background: #eee; color: #333; padding: 2px 7px; margin-right: 6px; border-radius: 4px; cursor: pointer; }
+    .like-btn.liked { background: #aeeaae; color: #174317; }
+    .logout-btn { float: right; }
+    #loginForm, #signupForm { margin-bottom: 1.2em; }
+    #back-link { display: inline-block; margin-bottom: 18px; text-decoration: none; color: #3366bb; }
+    #back-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div id="forum">
-    <h2>Simple Forum (local only)</h2>
-    <form id="postForm">
-      <input type="text" id="title" placeholder="Title" required style="width:100%;margin-bottom:5px;">
-      <textarea id="content" placeholder="Write your message..." required style="width:100%;height:60px;"></textarea>
-      <button type="submit">Post</button>
-    </form>
-    <h3>Posts</h3>
-    <div id="posts"></div>
+    <a href="index.html" id="back-link">&larr; Back to front page</a>
+    <button class="logout-btn" onclick="logout()" style="display:none;" id="logoutBtn">Log out (<span id="currentUser"></span>)</button>
+    <div id="authForms"></div>
+
+    <div id="mainContent" style="display:none;">
+      <form id="postForm">
+        <input type="text" id="title" placeholder="Title" required style="width:100%;margin-bottom:5px;">
+        <textarea id="content" placeholder="Write your message..." required style="width:100%;height:60px;"></textarea>
+        <button type="submit">Post</button>
+      </form>
+      <h3>Posts</h3>
+      <div id="posts"></div>
+    </div>
   </div>
   <script>
-    // Load posts from LocalStorage
-    function loadPosts() {
-      const posts = JSON.parse(localStorage.getItem('forumPosts') || "[]");
+    // --------- User Auth ---------
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('forumUsers') || '{}');
+    }
+    function saveUsers(users) {
+      localStorage.setItem('forumUsers', JSON.stringify(users));
+    }
+    function setCurrentUser(username) {
+      if (username) localStorage.setItem('forumCurrentUser', username);
+      else localStorage.removeItem('forumCurrentUser');
+    }
+    function getCurrentUser() {
+      return localStorage.getItem('forumCurrentUser');
+    }
+
+    // --------- Auth Forms ---------
+    function renderAuthForms() {
+      const authDiv = document.getElementById('authForms');
+      if (getCurrentUser()) {
+        document.getElementById('mainContent').style.display = '';
+        document.getElementById('logoutBtn').style.display = '';
+        document.getElementById('currentUser').innerText = getCurrentUser();
+        authDiv.innerHTML = '';
+      } else {
+        document.getElementById('mainContent').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'none';
+        authDiv.innerHTML = `
+        <div id="loginForm">
+          <h3>Log in</h3>
+          <form onsubmit="login(event)">
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button type="submit">Log in</button>
+          </form>
+          <div style="margin-top:6px;font-size:0.9em;">No account? <a href="#" onclick="showSignup();return false;">Sign up here</a></div>
+          <div id="login-error" style="color:red;"></div>
+        </div>
+        <div id="signupForm" style="display:none;">
+          <h3>Sign up</h3>
+          <form onsubmit="signup(event)">
+            <input type="text" id="signup-username" placeholder="Username" required>
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <button type="submit">Sign up</button>
+            <button type="button" onclick="showLogin()" style="margin-left:10px;">Cancel</button>
+          </form>
+          <div id="signup-error" style="color:red;"></div>
+        </div>
+        `;
+      }
+    }
+    function showSignup() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = '';
+    }
+    function showLogin() {
+      document.getElementById('loginForm').style.display = '';
+      document.getElementById('signupForm').style.display = 'none';
+    }
+    function login(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const users = getUsers();
+      if (users[username] && users[username].password === password) {
+        setCurrentUser(username);
+        renderAuthForms();
+        loadPosts();
+      } else {
+        document.getElementById('login-error').innerText = "Wrong username or password.";
+      }
+    }
+    function signup(e) {
+      e.preventDefault();
+      const username = document.getElementById('signup-username').value.trim();
+      const password = document.getElementById('signup-password').value;
+      if (username.length < 3 || password.length < 3) {
+        document.getElementById('signup-error').innerText = "Username and password must be at least 3 characters.";
+        return;
+      }
+      const users = getUsers();
+      if (users[username]) {
+        document.getElementById('signup-error').innerText = "Username already exists.";
+        return;
+      }
+      users[username] = { password };
+      saveUsers(users);
+      setCurrentUser(username);
+      renderAuthForms();
+      loadPosts();
+    }
+    function logout() {
+      setCurrentUser(null);
+      renderAuthForms();
+      loadPosts();
+    }
+
+    // --------- Posts ---------
+    function getPosts() {
+      return JSON.parse(localStorage.getItem('forumPostsV2') || "[]");
+    }
+    function savePosts(posts) {
+      localStorage.setItem('forumPostsV2', JSON.stringify(posts));
+    }
+    // Like handling (per user, per post)
+    function getLikes() {
+      return JSON.parse(localStorage.getItem('forumLikes') || '{}');
+    }
+    function saveLikes(likes) {
+      localStorage.setItem('forumLikes', JSON.stringify(likes));
+    }
+    // Replies: replies are stored in post.replies (array)
+    function renderPosts() {
+      const posts = getPosts();
+      const likes = getLikes();
       const postsDiv = document.getElementById('posts');
+      const user = getCurrentUser();
       postsDiv.innerHTML = "";
-      posts.forEach(p => {
+      posts.forEach((p, idx) => {
         const el = document.createElement('div');
         el.className = "post";
-        el.innerHTML = `<div class="post-title">${p.title}</div>
-                        <div class="post-time">${p.time}</div>
-                        <div>${p.content}</div>`;
+        let likeCount = (likes[p.id] && likes[p.id].length) ? likes[p.id].length : 0;
+        let liked = user && likes[p.id] && likes[p.id].includes(user);
+        el.innerHTML = `
+          <div class="post-title">${p.title}</div>
+          <div class="post-time">${p.time} <span class="post-user">by ${p.user}</span></div>
+          <div>${p.content}</div>
+          <div class="actions">
+            <button class="like-btn${liked ? ' liked' : ''}" onclick="likePost('${p.id}')">
+              👍 Like (<span id="like-count-${p.id}">${likeCount}</span>)
+            </button>
+            <button class="reply-btn" onclick="showReplyForm('${p.id}')">Reply</button>
+          </div>
+          <div id="replies-${p.id}">
+            ${renderReplies(p.replies || [], p.id)}
+          </div>
+          <div id="reply-form-${p.id}" style="display:none;margin-top:8px;">
+            <form onsubmit="submitReply(event, '${p.id}')">
+              <textarea id="reply-content-${p.id}" placeholder="Write your reply..." required style="width:90%;height:40px;"></textarea>
+              <button type="submit">Submit reply</button>
+              <button type="button" onclick="hideReplyForm('${p.id}')" style="margin-left:6px;">Cancel</button>
+            </form>
+          </div>
+        `;
         postsDiv.appendChild(el);
       });
     }
-    // Add new post
+    function renderReplies(replies, postId) {
+      if (!replies || !replies.length) return "";
+      return replies.map(r => `
+        <div class="reply">
+          <div class="post-time">${r.time} <span class="post-user">by ${r.user}</span></div>
+          <div>${r.content}</div>
+        </div>
+      `).join('');
+    }
+    function likePost(postId) {
+      const user = getCurrentUser();
+      if (!user) {
+        alert("You must be logged in to like posts.");
+        return;
+      }
+      let likes = getLikes();
+      likes[postId] = likes[postId] || [];
+      if (likes[postId].includes(user)) {
+        // Unlike
+        likes[postId] = likes[postId].filter(u => u !== user);
+      } else {
+        likes[postId].push(user);
+      }
+      saveLikes(likes);
+      renderPosts();
+    }
+    function showReplyForm(postId) {
+      if (!getCurrentUser()) {
+        alert("You must be logged in to reply.");
+        return;
+      }
+      document.getElementById('reply-form-' + postId).style.display = '';
+      document.getElementById('reply-content-' + postId).focus();
+    }
+    function hideReplyForm(postId) {
+      document.getElementById('reply-form-' + postId).style.display = 'none';
+    }
+    function submitReply(e, postId) {
+      e.preventDefault();
+      const content = document.getElementById('reply-content-' + postId).value.trim();
+      if (!content) return;
+      const user = getCurrentUser();
+      const posts = getPosts();
+      const postIdx = posts.findIndex(p => p.id === postId);
+      if (postIdx === -1) return;
+      posts[postIdx].replies = posts[postIdx].replies || [];
+      posts[postIdx].replies.push({
+        content,
+        user,
+        time: new Date().toLocaleString()
+      });
+      savePosts(posts);
+      hideReplyForm(postId);
+      renderPosts();
+    }
+
+    // --------- Add new post ---------
     document.getElementById('postForm').onsubmit = function(e) {
       e.preventDefault();
+      const user = getCurrentUser();
+      if (!user) {
+        alert("You must be logged in to post.");
+        return;
+      }
       const title = document.getElementById('title').value.trim();
       const content = document.getElementById('content').value.trim();
       if (!title || !content) return;
-      const posts = JSON.parse(localStorage.getItem('forumPosts') || "[]");
+      const posts = getPosts();
       posts.unshift({
+        id: 'p' + Date.now() + Math.floor(Math.random()*99999),
         title,
         content,
-        time: new Date().toLocaleString()
+        user,
+        time: new Date().toLocaleString(),
+        replies: []
       });
-      localStorage.setItem('forumPosts', JSON.stringify(posts));
+      savePosts(posts);
       document.getElementById('title').value = "";
       document.getElementById('content').value = "";
-      loadPosts();
+      renderPosts();
     }
+
+    // --------- Initial load ---------
+    function loadPosts() {
+      if (getCurrentUser()) {
+        document.getElementById('mainContent').style.display = '';
+      } else {
+        document.getElementById('mainContent').style.display = 'none';
+      }
+      renderPosts();
+    }
+
+    renderAuthForms();
     loadPosts();
   </script>
 </body>
