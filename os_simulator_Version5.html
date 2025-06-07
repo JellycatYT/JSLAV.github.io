@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OS Simulator (HTML/JS)</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { background: #008080; overflow: hidden; }
+    #desktop {
+      position: absolute; left:0; top:0; width:100vw; height:100vh;
+      background-size: cover; background-position: center;
+      user-select: none;
+    }
+    .icon {
+      width: 98px; height: 100px; text-align: center;
+      position: absolute; cursor: pointer;
+      font-size: 28px; color: #222;
+      user-select: none;
+      background: #f9f9f9cc; border-radius: 20px; border: 2px solid #aaa;
+      transition: box-shadow 0.1s;
+      box-shadow: 1px 2px 6px #3333;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    }
+    .icon:hover { box-shadow: 2px 4px 12px #3336; background: #fff; }
+    .icon-label { font-size: 15px; margin-top: 2px;}
+    .window {
+      position: absolute; background: #eee;
+      border: 2px solid #888; border-radius: 10px;
+      min-width: 330px; min-height: 110px;
+      box-shadow: 5px 7px 24px #0004;
+      z-index: 10;
+      resize: both; overflow: auto;
+      display: flex; flex-direction: column;
+    }
+    .window-header {
+      background: #222; color: #fff;
+      padding: 7px 10px; border-radius: 10px 10px 0 0;
+      cursor: move; display: flex; justify-content: space-between; align-items: center;
+      font-size: 17px;
+      user-select: none;
+    }
+    .window-content { padding: 14px; flex: 1 1 auto; background: #f9f9f9;}
+    .window-close {
+      color: #fff; background: #d33; border: none; cursor: pointer; font-size: 19px; border-radius: 6px; padding: 0 10px;
+      margin-left: 16px;
+    }
+    #fileinput { display: none; }
+    .audio-player { width: 100%; }
+    .window-content input[type="text"], .window-content textarea { font-size: 17px; }
+    ::-webkit-scrollbar { width: 8px; background: #eee;}
+    ::-webkit-scrollbar-thumb { background: #c8c8c8; border-radius: 7px;}
+  </style>
+</head>
+<body>
+  <input type="file" id="fileinput" />
+  <div id="desktop"></div>
+  <script>
+    // ----- Icon definitions and actions -----
+    const iconDefs = [
+      {label:"Calculator", icon:"🧮", x:30, y:30, onclick:openCalculator},
+      {label:"Notepad", icon:"📝", x:140, y:30, onclick:openNotepad},
+      {label:"Games", icon:"🎮", x:250, y:30, onclick:openGamesFolder},
+      {label:"Browser", icon:"🌐", x:360, y:30, onclick:openBrowser},
+      {label:"YouTube", icon:"▶️", x:470, y:30, onclick:openYouTube},
+      {label:"Music", icon:"🎵", x:580, y:30, onclick:openMusicPlayer},
+      {label:"Import Python", icon:"⬇️", x:690, y:30, onclick:importPythonApp},
+      {label:"Sisu Compiler", icon:"🦾", x:30, y:150, onclick:openSisuCompiler},
+      {label:"Change BG", icon:"🌄", x:140, y:150, onclick:openBgDialog}
+    ];
+    let importedIcons = [];
+    const desktop = document.getElementById('desktop');
+
+    // ---- Icon rendering
+    function renderIcons() {
+      desktop.innerHTML = "";
+      let icons = iconDefs.concat(importedIcons);
+      icons.forEach((icon, i) => {
+        const div = document.createElement('div');
+        div.className = 'icon';
+        div.style.left = (icon.x || (30 + (i%10)*110)) + "px";
+        div.style.top = (icon.y || (30 + Math.floor(i/10)*120)) + "px";
+        div.innerHTML = `<div style="font-size:44px;">${icon.icon}</div>
+                         <div class="icon-label">${icon.label}</div>`;
+        div.onclick = icon.onclick;
+        desktop.appendChild(div);
+      });
+    }
+    renderIcons();
+
+    // ---- Window creation, drag & drop
+    function createWindow(title, html, opts={}) {
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.style.left = (90 + Math.random()*400) + "px";
+      win.style.top = (70 + Math.random()*200) + "px";
+      win.style.width = (opts.width||380)+"px";
+      win.innerHTML = `
+        <div class="window-header">
+          <span>${title}</span>
+          <button class="window-close" title="Close">&times;</button>
+        </div>
+        <div class="window-content">${html}</div>
+      `;
+      win.querySelector('.window-close').onclick = () => win.remove();
+      desktop.appendChild(win);
+      makeDraggable(win);
+      return win;
+    }
+    function makeDraggable(win) {
+      const header = win.querySelector('.window-header');
+      let x=0,y=0,drag=false,ox=0,oy=0;
+      header.onmousedown = function(e) {
+        drag = true; x = e.clientX; y = e.clientY;
+        ox = win.offsetLeft; oy = win.offsetTop;
+        document.onmousemove = function(e) {
+          if(drag) {
+            win.style.left = (ox + e.clientX - x) + "px";
+            win.style.top = (oy + e.clientY - y) + "px";
+          }
+        };
+        document.onmouseup = function(){ drag=false; document.onmousemove=null; document.onmouseup=null; };
+      };
+    }
+
+    // ---- Applications ----
+    function openCalculator() {
+      createWindow("Calculator", `
+        <input id="calcinput" type="text" style="width:70%">
+        <button onclick="document.getElementById('calcres').innerText = (()=>{try{return eval(document.getElementById('calcinput').value)}catch(e){return 'Error'}})()">=</button>
+        <div id="calcres" style="margin-top:10px;font-size:18px;"></div>
+      `);
+    }
+    function openNotepad() {
+      createWindow("Notepad", `<textarea style="width:99%;height:180px;font-size:16px"></textarea>`);
+    }
+    function openBrowser() {
+      createWindow("Browser", `
+        <input id="browserurl" type="text" style="width:80%" value="https://www.google.com">
+        <button onclick="let u=document.getElementById('browserurl').value;document.getElementById('browserframe').src=u;">Go</button><br>
+        <iframe id="browserframe" src="https://www.google.com" style="width:96%;height:350px;border:1px solid #aaa;margin-top:6px"></iframe>
+      `, {width:650});
+    }
+    function openYouTube() {
+      createWindow("YouTube", `
+        <iframe width="95%" height="340" src="https://www.youtube.com/embed/?listType=user_uploads&list=YouTube" allowfullscreen></iframe>
+      `, {width:560});
+    }
+    function openGamesFolder() {
+      const html = `
+        <button onclick="window.openTicTacToe && window.openTicTacToe()">TicTacToe ❎</button>
+        <button onclick="window.openGuessNum && window.openGuessNum()">Guess Number ❓</button>
+      `;
+      createWindow("Games", html, {width:300});
+    }
+    // TicTacToe and Guess Number as globals
+    window.openTicTacToe = function() {
+      const win = createWindow("TicTacToe", `<div id="ttt"></div>`, {width:220});
+      tttInit();
+    }
+    window.openGuessNum = function() {
+      const win = createWindow("Guess a Number", `
+        <div>Guess a number 1-100:</div>
+        <input id="guessinput" type="number">
+        <button onclick="checkGuess()">Guess</button>
+        <div id="guessres"></div>
+      `, {width:260});
+      window.secret = Math.floor(1 + Math.random() * 100);
+      window.checkGuess = function(){
+        let val = parseInt(document.getElementById('guessinput').value);
+        let res = '';
+        if(val < window.secret) res = "Too low!";
+        else if(val > window.secret) res = "Too high!";
+        else res = "Correct!";
+        document.getElementById('guessres').innerText = res;
+      }
+    }
+    function tttInit() {
+      const board = Array(9).fill("");
+      let turn = "X";
+      const ttt = document.getElementById('ttt');
+      ttt.innerHTML = "";
+      board.forEach((_,i) => {
+        const btn = document.createElement('button');
+        btn.style.width = "38px";
+        btn.style.height = "38px";
+        btn.style.fontSize = "23px";
+        btn.style.margin = "2px";
+        btn.onclick = () => {
+          if(board[i]=="") {
+            board[i]=turn;
+            btn.innerText=turn;
+            if(checkWin(board,turn)) {
+              ttt.innerHTML += `<div style="margin-top:6px;font-size:18px">${turn} wins!</div>`;
+              ttt.querySelectorAll('button').forEach(b=>b.disabled=true);
+            } else if(board.every(x=>x)) {
+              ttt.innerHTML += "<div style='margin-top:6px;font-size:18px'>Draw!</div>";
+            } else {
+              turn = turn=="X"?"O":"X";
+            }
+          }
+        }
+        ttt.appendChild(btn);
+        if(i%3==2) ttt.appendChild(document.createElement('br'));
+      });
+      function checkWin(b, p) {
+        const win = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        return win.some(w=>w.every(i=>b[i]==p));
+      }
+    }
+
+    function openMusicPlayer() {
+      const win = createWindow("Music Player", `
+        <input type="file" accept=".mp3,.mid,.midi" id="audiofile" /><br>
+        <audio id="audioplayer" class="audio-player" controls style="width:96%;margin-top:8px"></audio>
+        <div style="font-size:13px;margin-top:5px;">MP3 and MIDI (if browser supports)</div>
+      `, {width:380});
+      const file = win.querySelector('#audiofile');
+      const player = win.querySelector('#audioplayer');
+      file.onchange = function(e){
+        const url = URL.createObjectURL(file.files[0]);
+        player.src = url;
+        player.play();
+      }
+    }
+    function importPythonApp() {
+      const inp = document.getElementById('fileinput');
+      inp.accept = ".py";
+      inp.onchange = function(e) {
+        if(inp.files.length > 0) {
+          const fname = inp.files[0].name;
+          importedIcons.push({
+            label: fname,
+            icon: "⬇️",
+            x: 250 + importedIcons.length*110,
+            y: 150,
+            onclick: () => alert("Running Python files is not supported in the browser.\nThis is just a visual placeholder!")
+          });
+          renderIcons();
+        }
+      };
+      inp.click();
+    }
+    function openSisuCompiler() {
+      createWindow("Sisu Compiler (demo)", `
+        <div>This is a placeholder for a future Sisu language compiler!<br>
+        (Once Sisu is available in JavaScript, it can be embedded here.)</div>
+      `, {width:350});
+    }
+    function openBgDialog() {
+      const inp = document.getElementById('fileinput');
+      inp.accept = ".png";
+      inp.onchange = function(e) {
+        if(inp.files.length > 0) {
+          const url = URL.createObjectURL(inp.files[0]);
+          desktop.style.backgroundImage = `url('${url}')`;
+        }
+      };
+      inp.click();
+    }
+
+    // ---- Resize background when window size changes
+    window.onresize = () => {
+      desktop.style.width = window.innerWidth+"px";
+      desktop.style.height = window.innerHeight+"px";
+    };
+    window.onresize();
+  </script>
+</body>
+</html>
