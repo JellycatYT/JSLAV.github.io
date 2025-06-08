@@ -50,9 +50,50 @@
             border-radius: 4px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.09);
         }
+        nav {
+            background: #1d3557;
+            padding: 0;
+            margin-bottom: 32px;
+            border-radius: 8px 8px 0 0;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        nav ul li {
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li a, nav ul li .forum-link {
+            display: block;
+            padding: 14px 18px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.16s;
+        }
+        nav ul li a:hover, nav ul li .forum-link:hover {
+            background: #457b9d;
+        }
     </style>
 </head>
 <body>
+    <nav>
+      <ul>
+        <li><a href="/">Front page</a></li>
+        <li><a href="uutiset.html">News</a></li>
+        <li><a href="jslav-games.html">JSLAV-Games</a></li>
+        <li><a href="chat.html">Chat</a></li>
+        <li><a href="videos.html">Videos</a></li>
+        <li><a href="games-we-not-made-them.html">Other Games</a></li>
+        <li><a href="forum.html" target="_blank" class="forum-link">Forum</a></li>
+        <li><a href="os_simulator_Version5.html">Simulator</a></li>
+        <li><a href="JSLAVOS_0.1.html" target="_blank">DOWNLOAD JSLAVOS_0.1</a></li>
+      </ul>
+    </nav>
     <div class="container">
         <h1>JSLAVOS_0.1</h1>
         <h2>Python OS Simulator</h2>
