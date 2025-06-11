@@ -85,26 +85,17 @@
             <li>Run custom Python scripts as "applications"</li>
             <li>Try out features similar to real computers – file management, launching apps, and more</li>
             <li>Great for learning Python, experimenting with OS concepts, or just having fun!</li>
-        </ul>
-        <!-- If you have a screenshot, you can add it here -->
-        <!-- <img src="jslavos_screenshot.png" alt="Screenshot of JSLAVOS_0.1" class="screenshot"> -->
-        <a href="os_simulaattori.py" download="os_simulaattori.py" class="download-link">DOWNLOAD JSLAVOS_0.1</a>
-        <a href="JSLAV.PY%20games.zip" download="JSLAV.PY games.zip" class="games-download-link">DOWNLOAD JSLAV.PY games.zip</a>
-        <div class="games-description">
-            <strong>JSLAV.PY games.zip</strong> contains a collection of ready-to-play Python games designed for use in JSLAVOS. Simply download, extract, and place the games in your simulator's directory to start playing!
-        </div>
-        <h3 style="margin-top: 38px;">How to Use</h3>
-        <ol>
-            <li>Download <b>os_simulaattori.py</b> using the button above.</li>
-            <li>Make sure you have <strong>Python 3</strong> installed on your computer.</li>
-            <li>Run the main script (for example: <code>python os_simulaattori.py</code>).</li>
-            <li>Start exploring the OS simulator – try out built-in games and tools, or add your own Python scripts!</li>
-            <li><b>Optional:</b> To play extra games, download <b>JSLAV.PY games.zip</b> and extract its contents into your JSLAVOS folder.</li>
-        </ol>
-        <p style="margin-top: 40px;">
-            <em>Created by JellycatYT / JSLAV.<br>
-            We Make Cool Games and more.</em>
-        </p>
-    </div>
-</body>
-</html>
+         </ul>
+    <!-- If you have a screenshot, you can add it here -->
+    <!-- <img src="jslavos_screenshot.png" alt="Screenshot of JSLAVOS_0.1" class="screenshot"> -->
+
+    <a href="os_simulaattori.py" download="os_simulaattori.py" class="download-link">DOWNLOAD JSLAVOS_0.1</a>
+
+    <!-- Download JSLAV.PY games.zip button -->
+    <a href="JSLAV.PY%20games.zip" download="JSLAV.PY games.zip" class="games-download-link" id="gamesDownloadBtn">DOWNLOAD JSLAV.PY games.zip</a>
+
+    <script>
+        // Optionally, make "DOWNLOAD JSLAV.PY games.zip" more prominent or trigger download on click
+        document.querySelectorAll('.games-download-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // This ensures download attribute
